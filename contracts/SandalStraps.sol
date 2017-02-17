@@ -16,17 +16,18 @@ See MIT Licence for further details.
 
 \******************************************************************************/
 
-import "Base.sol";
 import "Interfaces.sol";
+import "ExtendedBase.sol";
 import "Registrar.sol";
 import "Value.sol";
 
 pragma solidity ^0.4.7;
 
 
-contract SandalStraps is Base, StrapsBase
+contract SandalStraps is ExtendedBase
 {
     string constant public VERSION = "SandalStraps v0.0.6";
+    bytes32 public regName;
     RegistrarFactory public bootstrap;
     Registrar public metaRegistrar;
     
@@ -88,6 +89,15 @@ contract SandalStraps is Base, StrapsBase
     {
         regName_ = Registrar(metaRegistrar.namedAddress(_registrar)).
             idxName(_idx);
+    }
+    
+    function getLastFromFactory(bytes32 _factory)
+        public constant
+        returns (address regAddress_)
+    {
+        regAddress_ = FactoryInterface(
+            Registrar(metaRegistrar.namedAddress("factories")).
+                namedAddress(_factory)).last();
     }
     
 
@@ -184,7 +194,7 @@ contract SandalStraps is Base, StrapsBase
 contract SandalStrapsFactory is FactoryInterface
 {
     bytes32 constant public regName = "SandalStraps";
-    string constant public VERSION = "SandalStrapsFactory v0.0.6-sandalstraps";
+    string constant public VERSION = "SandalStrapsFactory v0.0.6";
 
     function createNew(bytes32 _regName, address _owner)
         public

@@ -18,10 +18,9 @@ See MIT Licence for further details.
 
 pragma solidity ^0.4.7;
 
-import "Base.sol";
 import "Interfaces.sol";
 
-contract Registrar is Base, StrapsBase
+contract Registrar is StrapsBase
 {
     string constant public VERSION = "SandalStraps Registrar v0.0.6";
     
