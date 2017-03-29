@@ -1,6 +1,6 @@
 /******************************************************************************\
 
-file:   Value.sol
+file:   StringsMap.sol
 ver:    0.0.8
 updated:28-Mar-2017
 author: Darryl Morris (o0ragman0o)
@@ -8,11 +8,9 @@ email:  o0ragman0o AT gmail.com
 
 This file is part of the SandalStraps framework
 
-`Value` is a SandalStraps Registrar compliant ownable metric contract.
-It can be set by the owner and `value()` read publically returning a `uint256`
-value.
-The `function value() returns (uint);` API is intended as a modualar parameter
-or value source for other utilising contracts. 
+StringsMap is a SandalStraps compliant wrapper to store strings keyed by their
+sha3 hash.  It can be used as a lookup for RegBase resources.
+
 
 This software is distributed in the hope that it will be useful,
 but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -27,41 +25,45 @@ pragma solidity ^0.4.10;
 import "https://github.com/o0ragman0o/SandalStraps/contracts/RegBase.sol";
 import "https://github.com/o0ragman0o/SandalStraps/contracts/Factory.sol";
 
-contract Value is RegBase
+contract StringsMap is RegBase
 {
-    bytes32 constant public VERSION = "Value v0.0.8";
-    uint public value;
+    bytes32 constant public VERSION = "StringsMap v0.0.8";
+    bytes32 public last;
 
-    function Value(address _creator, bytes32 _regName, address _owner)
+    mapping (bytes32 => string) public strings;
+    
+    function StringsMap(address _creator, bytes32 _regName, address _owner)
         RegBase(_creator, _regName, _owner)
     {
         // nothing to contruct
     }
-    
-    function set(uint _value)
+
+    function set(string _string)
+        public
     {
-        require(msg.sender == owner);
-        value = _value;
+        last = sha3(_string);
+        strings[last] = _string;
     }
 }
 
 
-contract ValueFactory is Factory
+contract StringsMapFactory is Factory
 {
-    bytes32 constant public regName = "Value";
-    string constant public VERSION = "ValueFactory v0.0.8";
+    bytes32 constant public regName = "StringsMap";
+    bytes32 constant public VERSION = "StringsMapFactory v0.0.8";
 
-    function ValueFactory(address _creator, bytes32 _regName, address _owner)
+    function StringsMapFactory(
+            address _creator, bytes32 _regName, address _owner)
         Factory(_creator, _regName, _owner)
     {
-        
+        // nothing to contruct
     }
 
     function createNew(bytes32 _regName, address _owner)
         payable
         feePaid
     {
-        last = new Value(msg.sender, _regName, _owner);
+        last = new StringsMap(msg.sender, _regName, _owner);
         Created(msg.sender, _regName, last);
     }
 }
