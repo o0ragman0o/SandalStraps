@@ -53,12 +53,6 @@ contract Factory is RegBase
         // nothing left to construct
     }
     
-    function Destroy()
-        onlyOwner
-    {
-        selfdestruct(owner);
-    }
-
     // Sets product creation fee
     function setFee(uint _fee)
         onlyOwner
