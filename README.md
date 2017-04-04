@@ -13,8 +13,8 @@ There are four primary catagorys of contracts in the framework
 * Factories are contracts containing bytecode of a product contract for deployment.
 * Product contracts could be anything providing a required functionality and are created by a registered factory.  They may be independent from the framework or be an interactive component unto it., including the SandalStraps and Registrar contracts themselves (implying that SandalStraps can selfspawn).
 
-##API
-###Base API
+## API
+### Base API
 All `SandalStraps` compliant contracts are required to present a minimum interface presenting public functions of:
 ```
 // Constructor to be called by the contract's factory upon `new`. 
@@ -50,7 +50,7 @@ function _init(<param1>, <param2>,...);
 // To test if the contract has been initialised
 function __initfuse() constant returns(bool);
 ```
-###Registrar API
+### Registrar API
 In addition to the base compliant API, a `SandalStraps` `Registrar` contract exposes a minimum of the following functions:
 ```
 // Returns a registered address given its index
@@ -74,7 +74,7 @@ function add(address _addr);
 // Deletes a registration of a contract given its address
 function remove(address _addr);
 ```
-###Factory API
+### Factory API
 In addition to the base compliant API, a `SandalStraps` `Factory` contract exposes a minimum of the following functions:
 ```
 // Creates a new instance of the product contract
@@ -122,7 +122,7 @@ function withdraw();
 function callAsContract(address _k, uint _value, bytes _callData);
 ```
 
-##Wrapped Types
+## Wrapped Types
 An applied framework may require publicly accessible control values, e.g. fees, to be kept. For this purpose atomic store type may be wrapped in a compliant contract such as the `Value` contract.  Any tsimple type up to 32 bytes (256 bits) can be cast into and out of this contract store:
 ```
 // Returns the value of `Value` state variable
@@ -132,7 +132,7 @@ function value() constant returns (uint value_);
 function set(uint _value);
 ```
 
-##StringsMap
+## StringsMap
 The `StringsMap` contract is a `SandalStraps` compliant contract that stores strings in a `byte32` keyed mapping.  This can be useful for storing `resource` strings longer than 32 bytes
 ```
 // Returns a stored string given its `sha3` hash
@@ -145,7 +145,7 @@ function set(string _string);
 function last() constant returns (bytes32 lastHash_);
 ```
 
-##Fees and Fee Collection
+## Fees and Fee Collection
 The `SandalStraps` contract and compliant factories can collect optional fees.  The fees collected by the SandalStraps instance can be withdrawn to its `owner` or a `feeCollector` contract if one is registered in the `metaRegistrar` with that name.  Fees collected by a `Factory` can be withdrawn to its owner.
 
 In addition to a possible `Factory` fee, fees can be charged by a `SandalStraps` instance upon registering a new `Factory` through `addFactory()` and creating a new product by calling `newFromFactory()`.
@@ -164,7 +164,7 @@ Although factories are independent of the the `SandalStraps` instance and can cr
 
 Once initialized, adding a factory will register it into the `factories` registrar and also create a registrar of the factory's `regName` if it didn't already exist.  When a product is created through `newFromfactory()`, it is entered into the registrar of its factory's name.
 
-##Writing SandalStraps Compliant Contracts
+## Writing SandalStraps Compliant Contracts
 
 Any contract can be written as `SandalStraps` compliant by importing `RegBase.sol` and `Factory.sol` as in the following boilerplate example.  
 ```
