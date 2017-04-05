@@ -27,7 +27,7 @@ pragma solidity ^0.4.10;
 contract SandalStraps is RegBase
 {
     bytes32 constant public VERSION = "SandalStraps v0.0.8";
-    uint8 _initLevel = 1;
+    uint8 _initFuse = 3;
     RegistrarFactory public bootstrap;
     Registrar public metaRegistrar;
     
@@ -88,8 +88,8 @@ contract SandalStraps is RegBase
         public
         onlyOwner
     {
-        require(_initLevel == 1);
-        _initLevel++;
+        require(_initFuse == 1);
+        _initFuse++;
         bootstrap.createNew("metaRegistrar", 0);
         metaRegistrar = Registrar(bootstrap.last());
     }
@@ -102,8 +102,8 @@ contract SandalStraps is RegBase
         public
         onlyOwner
     {
-        require(_initLevel == 2);
-        _initLevel++;
+        require(_initFuse == 2);
+        _initFuse++;
         metaRegistrar.add(this);
         metaRegistrar.add(metaRegistrar);
         bootstrap.createNew("factories", 0);
@@ -116,8 +116,8 @@ contract SandalStraps is RegBase
         public
         onlyOwner
     {
-        require(_initLevel == 3);
-        delete _initLevel;
+        require(_initFuse == 3);
+        delete _initFuse;
         bootstrap.createNew("Registrar", 0);
         metaRegistrar.add(bootstrap.last());
     }
@@ -133,9 +133,9 @@ contract SandalStraps is RegBase
         Registrar registrar;
         bytes32 _regName = RegBase(_address).regName();
         address feeAddr = metaRegistrar.namedAddress("addFactoryFee");
-        uint256 addFactoryFee = msg.sender == owner ? 0 :
+        uint256 chargeFee = msg.sender == owner ? 0 :
                     feeAddr == 0x0 ? 0 : Value(feeAddr).value();
-        require(addFactoryFee == msg.value);
+        require(chargeFee == msg.value);
 
         registrar = Registrar(metaRegistrar.namedAddress("factories"));
         registrar.add(_address);
@@ -171,11 +171,13 @@ contract SandalStraps is RegBase
 
         require(factoryFee + newFromFactoryFee == msg.value);
         registrar = Registrar(metaRegistrar.namedAddress(_factory));
-        factory.createNew(_regName, msg.sender);
+        // require(feeCollector.transfer(newFromFactoryFee));     
+        require(
+            factory.call.value(factoryFee)("createNew", _regName, msg.sender));
         registrar.add(factory.last());
     }
     
-    // Manually registers and `regBase` compliant contract into an existing
+    // Manually registers a `regBase` compliant contract into an existing
     // registrar
     function setRegistrarEntry(bytes32 _registrar, address _addr)
         public
@@ -203,39 +205,48 @@ contract SandalStraps is RegBase
     {
         address feeCollector = metaRegistrar.namedAddress("feeCollector");
         if (0x0 == feeCollector) feeCollector = owner;
-        if(!feeCollector.call.value(this.balance)()) throw;     
+        feeCollector.transfer(this.balance);
+    }
+    
+    function callAsContract(address _k, uint _value, bytes _callData)
+        public
+        onlyOwner
+        returns (bool)
+    {
+        require(_k.call.value(_value)(_callData));
+        return true;
     }
 
     // Proxy functions to interact with contracts owned by the SandalStraps
     // Instance.
 
-    // function changeOwnerOf(address _regAddr, address _owner)
-    //     public
-    //     onlyOwner
-    // {
-    //     RegBase(_regAddr).changeOwner(_owner);
-    // }
+    function changeOwnerOf(address _regAddr, address _owner)
+        public
+        onlyOwner
+    {
+        RegBase(_regAddr).changeOwner(_owner);
+    }
 
-    // function changeResourceOf(address _regAddr, string _resource)
-    //     public
-    //     onlyOwner
-    // {
-    //     RegBase(_regAddr).changeResource(_resource);
-    // }
+    function changeResourceOf(address _regAddr, bytes32 _resource)
+        public
+        onlyOwner
+    {
+        RegBase(_regAddr).changeResource(_resource);
+    }
     
-    // function setFeeOf(address _regAddr, uint _fee)
-    //     public
-    //     onlyOwner
-    // {
-    //     Factory(_regAddr).setFee(_fee);
-    // } 
+    function setFeeOf(address _regAddr, uint _fee)
+        public
+        onlyOwner
+    {
+        Factory(_regAddr).setFee(_fee);
+    } 
 
-    // function withdrawFrom(address _regAddr)
-    //     public
-    //     onlyOwner
-    // {
-    //     Factory(_regAddr).withdraw();
-    // } 
+    function withdrawFrom(address _regAddr)
+        public
+        onlyOwner
+    {
+        Factory(_regAddr).withdraw();
+    } 
     
 }
 
