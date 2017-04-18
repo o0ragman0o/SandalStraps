@@ -52,6 +52,7 @@ On 0x0 address values ownership is awarded to:
 function regName() constant returns(bytes32 regName_);
 ```
 Returns the register name of the contract. Can be made human readable using:
+
 `web3.toUtf8(<contract>.regName())`
 
 ### owner
@@ -65,6 +66,7 @@ Returns the contract owner address
 function changeOwner(address _owner);
 ```
 To change the contract owner
+
 `owner_` The address to transfer ownership to
 
 ### destroy
@@ -79,6 +81,7 @@ by a deriving contract which should first attempt to delete its storage
 function VERSION() constant returns (bytes32 version_);
 ```
 Returns the version string constant
+
 `web3.toUtf8(<contract>.VERSION())`
 
 ### resource (optional)
@@ -97,7 +100,9 @@ function __initfuse() constant returns(uint);
 If a contract is required to initialise state variables based on parameters that
 would otherwise be passed to a constructor, an initialisation function and fuse 
 can instead be included and called post deployment. _init() should delete
+
 `__initFuse` should be se to 1 during construction, tested for deleted by
+
 `_init()`
 
 ## Registrar API
@@ -124,7 +129,9 @@ Returns a registered address given its registration index
 function namedIndex(bytes32 _regName) constant returns (uint idx_);
 ```
 Returns the registration index given a registered name
+
 `_regName` The registration name of a registered contract
+
 `idx_` The registration index associated with the contract
 
 ### namedAddress
@@ -132,7 +139,9 @@ Returns the registration index given a registered name
 function namedAddress(bytes32 _regName) constant returns (address kAddr_);
 ```
 Returns a registered address given a registered name
+
 `_regName` The registration name of a registered contract
+
 `kAddr_` The address of the contract with that name
 
 ### addressIndex
@@ -140,7 +149,9 @@ Returns a registered address given a registered name
 function addressIndex(address _kAddr) constant returns (uint idx_);
 ```
 Returns the registration index given a registered address
+
 `_kAddr` The address of the registered contract to lookup
+
 `idx_` The registration index of the contract
 
 ### indexName
@@ -148,7 +159,9 @@ Returns the registration index given a registered address
 function indexName(uint _idx) constant returns (bytes32 regName_);
 ```
 Returns a contract name given its index
+
 `_idx` The registration index of a registered contract
+
 `regName_` The registration name of contract
 
 ### add
@@ -158,6 +171,7 @@ function add(address _kAddr);
 Registers or updates a contract by providing its address. 
 If the contracts `regName` is already registered then the caller must be the 
 registrar owner or owner of the registered contract
+
 `_kAddr` The address of the contract being registered
 
 ### remove
@@ -184,7 +198,9 @@ exposes a minimum of the following functions:
 function createNew(bytes32 _regName, address _owner) payable returns (address kAddr_);
 ```
 Deploys a new instance of the product contract
+
 `_regName` The registration name of the new contract
+
 `_owner` An address to be awarded ownership of the product contract. If 0x0
 then the caller (`msg.sender`) is awarded ownership.
 If a `fee` has been set, then the required value of ether must be sent with the call
@@ -201,6 +217,7 @@ by the factory owner
 function setValue(uint _fee);
 ```
 Sets the fee required to created product contracts
+
 `_fee` A fee value in wei
 
 ### withdraw
@@ -234,6 +251,7 @@ Registers a `Factory` contract. If a `Value` contract with the name
 and interpreted as a fee in wei to be paid to register the factory.
 If the factory's `regName` has not previously been registered, then a
 registrar is created of the same name. 
+
 `_kAddr` The factory address to be registered
 
 ### newFromFactory
@@ -244,8 +262,11 @@ Creates and registers a new product contract from a registered factory.
 The product contract is also registered into a registrar of the factory's
 `regName`. If the product's registration name is already registered then
 the owner must be the owner of the existing contract which is overwritten.
+
 `_factory` The `regName` of a factory from which to create a product
+
 `_regName` The registration name to be given to the product contract
+
 `kAddr_` The address of the created product contract
 
 ### setRegistrarEntry
@@ -254,7 +275,9 @@ function setRegistrarEntry(bytes32 _registrar, address _kAddr);
 ```
 Manually registers a compliant contract in a registrar. The registrar 
 or contract must be owned by the SandalStraps kernel instance.
+
 `_registrar` The registrar to register the contract into
+
 `_kAddr` The address of the contract to be registered
 
 
@@ -272,19 +295,21 @@ function callAsContract(address _kAddr, uint _value, bytes _callData);
 ```
 Allows the owner to make an arbitrary low level call as the SandalStraps
 kernal instance.
-`_kAddr` The address of the contract to call
-`_value` The value in wei to be sent
-`_callData` The RLP encoded call data
 
-###Proxy functions for the owner to interact with contracts owned by the
-SandalStraps instance.
+`_kAddr` The address of the contract to call
+
+`_value` The value in wei to be sent
+
+`_callData` The RLP encoded call data
 
 ### changeOwnerOf
 ```
 function changeOwnerOf(address _kAddr, address _owner);
 ```
 Changes the owner of a contract owned by the SandalStraps kernel instance.
+
 `_kAddr` The address of the owned contract.
+
 `_owner` The address of to transfer ownership to.
 
 ### changeResourseOf
@@ -292,7 +317,9 @@ Changes the owner of a contract owned by the SandalStraps kernel instance.
 function changeResourceOf(address _kAddr, bytes32 _resource);
 ```
 Changes the resource of a contract owned by the SandalStraps kernel instance.
+
 `_kAddr` The address of the owned contract.
+
 `_resource` The new resource value.
 
 ### setValue
@@ -301,7 +328,9 @@ function setValue(address _kAddr, uint _value);
 ```
 Sets the value of a registered `Value` contract owned by the SandalStraps
 kernal instance
+
 `_kAddr` The address of the owned contract.
+
 `_value` The value to set the `Value` contract to.
 
 
@@ -320,7 +349,7 @@ exposes a minimum of the following functions:
 
 ### value
 ```
-function value() constant returns (uint value_);
+function value() constant returns (uint);
 ```
 Returns the value of `Value` state variable
 
@@ -330,7 +359,9 @@ function set(uint _value);
 ```
 Sets the value of the `Value` state variable
 
-## StringsMap
+`_value` The value to be stored
+
+## StringsMap API
 The `StringsMap` contract is a `SandalStraps` compliant contract that stores
 owned strings in a `bytes32 => string` mapping.  This can be useful for storing
 `resource` strings longer than 32 bytes. A strings key is the sha3 hash of
@@ -349,6 +380,7 @@ exposes a minimum of the following functions:
 function strings(bytes32 _lookup) constant returns (string string_);
 ```
 Returns a stored string given its key
+
 `_lookup` A mapping key the string is stored at 
 
 ### set
@@ -356,7 +388,9 @@ Returns a stored string given its key
 function set(string _string);
 ```
 Stores an owned string in the mapping keyed by a sha3 contatination of
+
 `msg.sender` with string content.
+
 `_string` The string to store
 
 ### clear (by string)
@@ -364,6 +398,7 @@ Stores an owned string in the mapping keyed by a sha3 contatination of
 function clear(string _string)
 ```
 Allows a string owner to clears a stored string.
+
 `_string` The string to be deleted.
 
 ### clear (by key)
@@ -371,8 +406,8 @@ Allows a string owner to clears a stored string.
 function clear(bytes32 _hash)
 ```
 Allows a string owner or `StingMap` owner to delete a stored string.
-`_hash` The hash key of the string to delete
 
+`_hash` The hash key of the string to delete
 
 ## Fees and Fee Collection
 The `SandalStraps` contract and compliant factories can collect optional fees.
