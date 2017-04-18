@@ -1,8 +1,8 @@
 /******************************************************************************\
 
 file:   RegBase.sol
-ver:    0.0.8-sandalstraps
-updated:28-Mar-2017
+ver:    0.2.0
+updated:18-April-2017
 author: Darryl Morris (o0ragman0o)
 email:  o0ragman0o AT gmail.com
 
@@ -27,27 +27,61 @@ pragma solidity ^0.4.10;
 
 contract RegBase
 {
-    // `regName` A static identifier, set in the constructor and used by
-    // registrars
+//
+// Constants
+//
+
+    bytes32 constant public VERSION = "RegBase v0.2.0";
+
+//
+// State Variables
+//
+    
+    /// @dev A static identifier, set in the constructor and used for registrar
+    /// lookup
+    /// @return Registrar name SandalStraps registrars
     bytes32 public regName;
 
-    // `resource` A informational resource. Can be a sha3 of a string to lookup
-    // in a StringsMap
+    /// @dev An general purpose resource such as short text or a key to a
+    /// string in a StringsMap
+    /// @return resource
     bytes32 public resource;
     
-    // An address permissioned to enact owner restricted functions
+    /// @dev An address permissioned to enact owner restricted functions
+    /// @return owner
     address public owner;
 
+//
+// Events
+//
+
+    // Triggered on change of owner address
     event ChangedOwner(address indexed oldOwner, address indexed newOwner);
 
+    // Triggered on change of resource
+    event ChangedResource(bytes32 indexed resource);
+
+//
+// Modifiers
+//
+
+    // Permits only the owner
     modifier onlyOwner() {
         require(msg.sender == owner);
         _;
     }
-    
-    // `_creator` The calling address seen by a factory
-    // `_regName` A unique, static name referenced by a Registrar
-    // `_owner` optional owner address if creator is not the intended owner.
+
+//
+// Functions
+//
+
+    /// @param _creator The calling address passed through by a factory,
+    /// typically msg.sender
+    /// @param _regName A static name referenced by a Registrar
+    /// @param _owner optional owner address if creator is not the intended
+    /// owner
+    /// @dev On 0x0 value for _owner or _creator, ownership precedence is:
+    /// `_owner` else `_creator` else msg.sender
     function RegBase(address _creator, bytes32 _regName, address _owner)
     {
         regName = _regName;
@@ -55,24 +89,35 @@ contract RegBase
                 _creator != 0x0 ? _creator : msg.sender;
     }
     
+    /// @notice Will selfdestruct the contract
     function destroy()
+        public
         onlyOwner
     {
         selfdestruct(msg.sender);
     }
     
+    /// @notice Change the owner to `_owner`
+    /// @param _owner The address to which ownership is transfered
     function changeOwner(address _owner)
         public
         onlyOwner
+        returns (bool)
     {
         ChangedOwner(owner, _owner);
         owner = _owner;
+        return true;
     }
 
+    /// @notice Change the resource to `_resource`
+    /// @param _resource A key or short text to be stored as the resource.
     function changeResource(bytes32 _resource)
         public
         onlyOwner
+        returns (bool)
     {
         resource = _resource;
+        ChangedResource(_resource);
+        return true;
     }
 }

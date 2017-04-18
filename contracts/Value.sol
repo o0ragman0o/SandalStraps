@@ -1,15 +1,15 @@
 /******************************************************************************\
 
 file:   Value.sol
-ver:    0.0.8
-updated:28-Mar-2017
+ver:    0.2.0
+updated:18-Apr-2017
 author: Darryl Morris (o0ragman0o)
 email:  o0ragman0o AT gmail.com
 
 This file is part of the SandalStraps framework
 
 `Value` is a SandalStraps Registrar compliant ownable metric contract.
-It can be set by the owner and `value()` read publically returning a `uint256`
+It can be set by the owner and `value()` read publicly returning a `uint256`
 value.
 The `function value() returns (uint);` API is intended as a modualar parameter
 or value source for other utilising contracts. 
@@ -24,44 +24,69 @@ See MIT Licence for further details.
 
 pragma solidity ^0.4.10;
 
-import "https://github.com/o0ragman0o/SandalStraps/contracts/RegBase.sol";
 import "https://github.com/o0ragman0o/SandalStraps/contracts/Factory.sol";
 
 contract Value is RegBase
 {
-    bytes32 constant public VERSION = "Value v0.0.8";
+    bytes32 constant public VERSION = "Value v0.2.0";
     uint public value;
 
     function Value(address _creator, bytes32 _regName, address _owner)
         RegBase(_creator, _regName, _owner)
     {
-        // nothing to contruct
+        // nothing to construct
     }
     
-    function set(uint _value)
+    function set(uint _value) returns (bool)
     {
         require(msg.sender == owner);
         value = _value;
+        return true;
     }
 }
 
 
 contract ValueFactory is Factory
 {
-    bytes32 constant public regName = "Value";
-    string constant public VERSION = "ValueFactory v0.0.8";
+//
+// Constants
+//
 
+    /// @return registrar name
+    bytes32 constant public regName = "Value";
+
+    /// @return version string
+    bytes32 constant public VERSION = "ValueFactory v0.2.0";
+
+//
+// Function
+//
+
+    /// @param _creator The calling address passed through by a factory,
+    /// typically msg.sender
+    /// @param _regName A static name referenced by a Registrar
+    /// @param _owner optional owner address if creator is not the intended
+    /// owner
+    /// @dev On 0x0 value for _owner or _creator, ownership precedence is:
+    /// `_owner` else `_creator` else msg.sender
     function ValueFactory(address _creator, bytes32 _regName, address _owner)
         Factory(_creator, _regName, _owner)
     {
-        
+        // nothing to construct
     }
 
+    /// @notice Create a new product contract
+    /// @param _regName A unique name if the the product is to be registered in
+    /// a SandalStraps registrar
+    /// @param _owner An address of a third party owner.  Will default to
+    /// msg.sender if 0x0
+    /// @return kAddr_ The address of the new product contract
     function createNew(bytes32 _regName, address _owner)
         payable
         feePaid
+        returns (address kAddr_)
     {
-        last = new Value(msg.sender, _regName, _owner);
-        Created(msg.sender, _regName, last);
+        kAddr_ = address(new Value(msg.sender, _regName, _owner));
+        Created(msg.sender, _regName, kAddr_);
     }
 }

@@ -1,8 +1,8 @@
 /******************************************************************************\
 
 file:   Registrar.sol
-ver:    0.0.8
-updated:28-Mar-2017
+ver:    0.2.0
+updated:18-Apr-2017
 author: Darryl Morris (o0ragman0o)
 email:  o0ragman0o AT gmail.com
 
@@ -16,7 +16,7 @@ A registered contract can be looked up by unique keys of, `regName`, `address`
 and `index`.
 
 Only the `address` and `index` are stored in the registrar while `regName` is
-stored in the registered contract.
+stored in and looked up from the registered contract.
 
 
 `Registrar` is itself Registrar compliant and so can be self registered or
@@ -33,13 +33,22 @@ See MIT Licence for further details.
 
 pragma solidity ^0.4.10;
 
-import "https://github.com/o0ragman0o/SandalStraps/contracts/RegBase.sol";
 import "https://github.com/o0ragman0o/SandalStraps/contracts/Factory.sol";
 
 contract Registrar is RegBase
 {
-    bytes32 constant public VERSION = "Registrar v0.0.8";
-    
+
+//
+// Constants
+//
+
+    /// @return The contract version number
+    bytes32 constant public VERSION = "Registrar v0.2.0";
+
+//
+// State Variables
+//
+
     // `size` is the index of the most rescent registration and does not 
     // decrease with removals.
     // Indexing begins at 1 and not 0, so to avoid out-by-one errors, itterate
@@ -47,13 +56,19 @@ contract Registrar is RegBase
     //     for(i = 1; i <= size; i++) {...}
     uint public size;
 
-    // `indexAddress` maps Index -> Address
+    /// @dev `indexAddress` maps Index -> Address
+    /// @return The registered address at an index
     mapping (uint => address) public indexedAddress;
     
-    // `namedIndex` maps a contracts `regName` -> Index
+    /// @dev `namedIndex` maps a contracts `regName` -> Index
+    /// @return The registration index of a registered contracts name
     mapping (bytes32 => uint) public namedIndex;
 
-    // Test if sender is registrar owner or registered contract owner
+//
+//Modifiers
+//
+
+    // Test if sender is the registrar owner or registered contract owner
     modifier onlyOwners(address _contract)
     {
         require(msg.sender == owner ||
@@ -61,16 +76,37 @@ contract Registrar is RegBase
         _;
     }
 
+//
+// Events
+//
+
+    // Triggered when an address is registered
     event Registered(bytes32 regName, address _address);
+    
+    // Triggered when an address is unregistered
     event Removed(bytes32 regName, address _address);
     
+//
+// Functions
+//
+
+    /// @param _creator The calling address passed through by a factory,
+    /// typically msg.sender
+    /// @param _regName A static name referenced by a Registrar
+    /// @param _owner optional owner address if creator is not the intended
+    /// owner
+    /// @dev On 0x0 value for _owner or _creator, ownership precedence is:
+    /// `_owner` else `_creator` else msg.sender
     function Registrar(address _creator, bytes32 _regName, address _owner)
         RegBase(_creator, _regName, _owner)
     {
-        // nothing left to construct
+        // nothing to construct
     }
 
-    // Returns a contract address given its `regName`
+    /// @dev Return the registered addree named `_regName`
+    /// @param _regName A registered name
+    /// @param addr_ The registered address
+    /// @return addr_
     function namedAddress(bytes32 _regName)
         public
         constant
@@ -79,7 +115,10 @@ contract Registrar is RegBase
         addr_ = indexedAddress[namedIndex[_regName]];
     }
     
-    // Returns a contracts `index` given its address
+    /// @dev Returns a contracts `index` given its address
+    /// @param _addr A registered address
+    /// @param idx_ The registration index
+    /// @return idx_
     function addressIndex(address _addr)
         public
         constant
@@ -88,7 +127,10 @@ contract Registrar is RegBase
         idx_ = namedIndex[RegBase(_addr).regName()];
     }
 
-    // Returns a contracts `regName` given its index
+    /// @dev Returns a contracts `regName` given its index
+    /// @param _idx a registration index
+    /// @param regName_ The name of a registered contract 
+    /// @return regName_
     function indexName(uint _idx)
         public
         constant
@@ -97,23 +139,31 @@ contract Registrar is RegBase
         regName_ = RegBase(indexedAddress[_idx]).regName();
     }
     
-    // Adds or updates a contract in the registrar.
-    // Sender must be Registrar owner or owner of new contract to add.
-    // Sender must be Registrar owner or owner of both new and registered
-    // contracts to update.
-    // Update is determined by prior registration of a `regName`.
-    // Providing a prior address of an updated entry to `addressIndex()`
-    // can be used to discover the newer contract.
+    /// @notice Add contract address `_addr` to the registrar.
+    /// Sender must be Registrar owner or owner of new contract to add.
+    /// Sender must be Registrar owner or owner of both new and registered
+    /// contracts to update.
+    /// Update is determined by prior registration of a `regName`.
+    /// @dev Providing a prior address of an updated entry to `addressIndex()`
+    /// can be used to discover the newer contract. This is useful for upgrade
+    /// path discovery
+    /// @param _addr An address of a SandalStraps compliant contract
+    /// @return bool indicating call success
     function add(address _addr)
         public
         onlyOwners(_addr)
+        returns (bool)
     {
+        // Get and validate regName from contract to be registered 
         bytes32 regName = RegBase(_addr).regName();
+        require(regName != 0x0);
+        
+        // Get the index of the regName. 0 == not registered
         uint idx = namedIndex[regName];
 
-        // Prevent overwritting registrations if not the owner or registered
+        // Prevent overwritting registrations if not the registrar owner or
         // contract's owner 
-        if (idx != 0)
+        if (0 != idx)
         {
             require(msg.sender == owner || 
                 msg.sender == RegBase(indexedAddress[idx]).owner());
@@ -121,41 +171,69 @@ contract Registrar is RegBase
             idx = ++size;
         }
         
+        // Register the contract
         indexedAddress[idx] = _addr;
         namedIndex[regName] = idx;
         Registered(regName, _addr);
+        return true;
     }
     
-    // Deletes a contract's registration.
-    // Sender must be Registrar owner or owner of the registered contract
+    /// @notice Delete the registration of contract at `_addr`
+    /// @param _addr The address of a registered contract
+    /// @dev Sender must be Registrar owner or owner of the registered contract
+    /// @return bool indicating call success
     function remove(address _addr)
         public
         onlyOwners(_addr)
+        returns (bool)
     {
         bytes32 regName = RegBase(_addr).regName();
         delete indexedAddress[addressIndex(_addr)];
         delete namedIndex[regName];
         Removed(regName, _addr);
+        return true;
     }
 }
 
 
 contract RegistrarFactory is Factory
 {
-    bytes32 constant public regName = "Registrar";
-    bytes32 constant public VERSION = "RegistrarFactory v0.0.8";
+//
+// Constants
+//
 
+    bytes32 constant public regName = "Registrar";
+    bytes32 constant public VERSION = "RegistrarFactory v0.2.0";
+
+//
+// Functions
+//
+
+    /// @param _creator The calling address passed through by a factory,
+    /// typically msg.sender
+    /// @param _regName A static name referenced by a Registrar
+    /// @param _owner optional owner address if creator is not the intended
+    /// owner
+    /// @dev On 0x0 value for _owner or _creator, ownership precedence is:
+    /// `_owner` else `_creator` else msg.sender
     function RegistrarFactory(address _creator, bytes32 _regName, address _owner)
         Factory(_creator, _regName, _owner)
     {
-        // nothing to contruct
+        // nothing to construct
     }
 
+    /// @notice Create a new product contract
+    /// @param _regName A unique name if the the product is to be registered in
+    /// a SandalStraps registrar
+    /// @param _owner An address of a third party owner.  Will default to
+    /// msg.sender if 0x0
+    /// @return kAddr_ The address of the new product contract
     function createNew(bytes32 _regName, address _owner)
         payable
         feePaid
+        returns(address kAddr_)
     {
-        last = new Registrar(msg.sender, _regName, _owner);
-        Created(msg.sender, _regName, last);
+        kAddr_ = address(new Registrar(msg.sender, _regName, _owner));
+        Created(msg.sender, _regName, kAddr_);
     }
 }
