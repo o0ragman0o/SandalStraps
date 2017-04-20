@@ -8,7 +8,7 @@ email:  o0ragman0o AT gmail.com
 
 This file is part of the SandalStraps framework
 
-StringsMap is a SandalStraps compliant wrapper to store strings keyed by their
+BytesMap is a SandalStraps compliant wrapper to store byte arrays keyed by their
 sha3 hash.  It can be used as a lookup for RegBase resources.
 
 
@@ -75,7 +75,7 @@ contract BytesMap is RegBase
     }
     
     /// @notice Clear `_string`. Must be string owner
-    function clear(string _bytes)
+    function clear(bytes _bytes)
         public
     {
         delete bytesMap[sha3(msg.sender, _bytes)];
