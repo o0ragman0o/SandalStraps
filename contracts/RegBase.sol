@@ -1,8 +1,8 @@
 /******************************************************************************\
 
 file:   RegBase.sol
-ver:    0.2.0
-updated:18-April-2017
+ver:    0.2.1
+updated:9-May-2017
 author: Darryl Morris (o0ragman0o)
 email:  o0ragman0o AT gmail.com
 
@@ -31,7 +31,7 @@ contract RegBase
 // Constants
 //
 
-    bytes32 constant public VERSION = "RegBase v0.2.0";
+    bytes32 constant public VERSION = "RegBase v0.2.1";
 
 //
 // State Variables
@@ -80,7 +80,7 @@ contract RegBase
     /// @param _regName A static name referenced by a Registrar
     /// @param _owner optional owner address if creator is not the intended
     /// owner
-    /// @dev On 0x0 value for _owner or _creator, ownership precedence is:
+    /// @dev On 0x0 value for owner, ownership precedence is:
     /// `_owner` else `_creator` else msg.sender
     function RegBase(address _creator, bytes32 _regName, address _owner)
     {

@@ -1,14 +1,14 @@
 /******************************************************************************\
 
-file:   BytesMap.sol
-ver:    0.2.0
-updated:20-Apr-2017
+file:   BytessMap.sol
+ver:    0.2.1
+updated:9-May-2017
 author: Darryl Morris (o0ragman0o)
 email:  o0ragman0o AT gmail.com
 
 This file is part of the SandalStraps framework
 
-BytesMap is a SandalStraps compliant wrapper to store byte arrays keyed by their
+StringsMap is a SandalStraps compliant wrapper to store strings keyed by their
 sha3 hash.  It can be used as a lookup for RegBase resources.
 
 
@@ -22,7 +22,6 @@ See MIT Licence for further details.
 
 pragma solidity ^0.4.10;
 
-
 import "https://github.com/o0ragman0o/SandalStraps/contracts/Factory.sol";
 
 contract BytesMap is RegBase
@@ -31,7 +30,7 @@ contract BytesMap is RegBase
 // Constants
 //
 
-    bytes32 constant public VERSION = "BytesMap v0.2.0";
+    bytes32 constant public VERSION = "BytesMap v0.2.1";
 
 //
 // State Variables
@@ -105,7 +104,7 @@ contract BytesMapFactory is Factory
     bytes32 constant public regName = "BytesMap";
     
     /// @return version string
-    bytes32 constant public VERSION = "BytesMapFactory v0.2.0";
+    bytes32 constant public VERSION = "BytesMapFactory v0.2.1";
 
 //
 // Functions
@@ -136,6 +135,7 @@ contract BytesMapFactory is Factory
         feePaid
         returns (address kAddr_)
     {
+        require(_regName != 0x0);
         kAddr_ = address(new BytesMap(msg.sender, _regName, _owner));
         Created(msg.sender, _regName, kAddr_);
     }

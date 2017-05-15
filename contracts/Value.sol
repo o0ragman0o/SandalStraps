@@ -1,8 +1,8 @@
 /******************************************************************************\
 
 file:   Value.sol
-ver:    0.2.0
-updated:18-Apr-2017
+ver:    0.2.1
+updated:15-May-2017
 author: Darryl Morris (o0ragman0o)
 email:  o0ragman0o AT gmail.com
 
@@ -28,7 +28,7 @@ import "https://github.com/o0ragman0o/SandalStraps/contracts/Factory.sol";
 
 contract Value is RegBase
 {
-    bytes32 constant public VERSION = "Value v0.2.0";
+    bytes32 constant public VERSION = "Value v0.2.1";
     uint public value;
 
     function Value(address _creator, bytes32 _regName, address _owner)
@@ -56,7 +56,7 @@ contract ValueFactory is Factory
     bytes32 constant public regName = "Value";
 
     /// @return version string
-    bytes32 constant public VERSION = "ValueFactory v0.2.0";
+    bytes32 constant public VERSION = "ValueFactory v0.2.1";
 
 //
 // Function
@@ -86,6 +86,7 @@ contract ValueFactory is Factory
         feePaid
         returns (address kAddr_)
     {
+        require(_regName != 0x0);
         kAddr_ = address(new Value(msg.sender, _regName, _owner));
         Created(msg.sender, _regName, kAddr_);
     }

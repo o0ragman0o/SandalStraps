@@ -43,7 +43,7 @@ contract Registrar is RegBase
 //
 
     /// @return The contract version number
-    bytes32 constant public VERSION = "Registrar v0.2.1";
+    bytes32 constant public VERSION = "RegistrarUN v0.2.1";
 
 //
 // State Variables
@@ -64,6 +64,10 @@ contract Registrar is RegBase
     /// @return The registration index of a registered contracts name
     mapping (bytes32 => uint) public namedIndex;
 
+    /// @dev `addressName` maps a generic address to a name
+    /// @return The RegBase compliant name of a non-RegBase compliant address
+    mapping (address => bytes32) public addressName;
+    
 //
 //Modifiers
 //
@@ -97,7 +101,7 @@ contract Registrar is RegBase
     /// owner
     /// @dev On 0x0 value for _owner or _creator, ownership precedence is:
     /// `_owner` else `_creator` else msg.sender
-    function Registrar(address _creator, bytes32 _regName, address _owner)
+    function RegistrarUN(address _creator, bytes32 _regName, address _owner)
         RegBase(_creator, _regName, _owner)
     {
         // nothing to construct
@@ -124,7 +128,7 @@ contract Registrar is RegBase
         constant
         returns (uint idx_)
     {
-        idx_ = namedIndex[RegBase(_addr).regName()];
+        idx_ = namedIndex[regName[_addr]];
     }
 
     /// @dev Returns a contracts `regName` given its index
@@ -136,7 +140,7 @@ contract Registrar is RegBase
         constant
         returns (bytes32 regName_)
     {
-        regName_ = RegBase(indexedAddress[_idx]).regName();
+        regName_ = addressName[indexedAddress[_idx]];
     }
     
     /// @notice Add contract address `_addr` to the registrar.
@@ -149,14 +153,14 @@ contract Registrar is RegBase
     /// path discovery
     /// @param _addr An address of a SandalStraps compliant contract
     /// @return bool indicating call success
-    function add(address _addr)
+    function add(address _addr, bytes32 _regName)
         public
         onlyOwners(_addr)
         returns (bool)
     {
         // Get and validate regName from contract to be registered 
         bytes32 regName = RegBase(_addr).regName();
-        require(regName != 0x0);
+        regName = regName != 0x0 ? regName : _name;
         
         // Get the index of the regName. 0 == not registered
         uint idx = namedIndex[regName];
@@ -196,14 +200,14 @@ contract Registrar is RegBase
 }
 
 
-contract RegistrarFactory is Factory
+contract RegistrarUNFactory is Factory
 {
 //
 // Constants
 //
 
-    bytes32 constant public regName = "Registrar";
-    bytes32 constant public VERSION = "RegistrarFactory v0.2.1";
+    bytes32 constant public regName = "RegistrarUN";
+    bytes32 constant public VERSION = "RegistrarUNFactory v0.2.1";
 
 //
 // Functions
@@ -216,7 +220,7 @@ contract RegistrarFactory is Factory
     /// owner
     /// @dev On 0x0 value for _owner or _creator, ownership precedence is:
     /// `_owner` else `_creator` else msg.sender
-    function RegistrarFactory(address _creator, bytes32 _regName, address _owner)
+    function RegistrarUNFactory(address _creator, bytes32 _regName, address _owner)
         Factory(_creator, _regName, _owner)
     {
         // nothing to construct
@@ -233,8 +237,7 @@ contract RegistrarFactory is Factory
         feePaid
         returns(address kAddr_)
     {
-        require(_regName != 0x0);
-        kAddr_ = address(new Registrar(msg.sender, _regName, _owner));
+        kAddr_ = address(new RegistrarUN(msg.sender, _regName, _owner));
         Created(msg.sender, _regName, kAddr_);
     }
 }

@@ -1,8 +1,8 @@
 /******************************************************************************\
 
 file:   SandalStraps.sol
-ver:    0.2.0
-updated:18-Apr-2017
+ver:    0.2.1
+updated:15-May-2017
 author: Darryl Morris (o0ragman0o)
 email:  o0ragman0o AT gmail.com
 
@@ -28,14 +28,14 @@ contract SandalStraps is RegBase
 // Constants
 //
 
-    bytes32 constant public VERSION = "SandalStraps v0.2.0";
+    bytes32 constant public VERSION = "SandalStraps v0.2.1";
 
 //
 // State Variables
 //
 
     // Value to track contract initialization state 
-    uint8 _initFuse = 1;
+    uint8 public _initFuse = 1;
     
     // An embedded Registrar factory to bootstrap the contract 
     RegistrarFactory public bootstrap;
@@ -207,6 +207,24 @@ contract SandalStraps is RegBase
         return true;
     }
     
+    function getFeeFor(address _factory)
+        constant
+        returns (uint)
+    {
+        // Get chosen factory and ensure it exists
+        Factory factory = Factory(_factory);
+
+        // Get fee from chosen factory        
+        uint256 factoryFee = factory.value();
+        
+        // Get Straps fee if a value is registered. Straps owner gets free.
+        address feeAddr = metaRegistrar.namedAddress("newFromFactoryFee");
+        uint256 newFromFactoryFee = (0x0 == feeAddr || msg.sender == owner) ?
+            0 : Value(feeAddr).value();
+        
+        return (factoryFee + newFromFactoryFee);
+    }
+    
     /// @notice Create a new contract with name `_regName` from factory
     /// `_factory`
     /// @param _factory The registered name of a factory
@@ -343,7 +361,7 @@ contract SandalStrapsFactory is Factory
     bytes32 constant public regName = "SandalStraps";
 
     /// @return version string
-    bytes32 constant public VERSION = "SandalStrapsFactory v0.2.0";
+    bytes32 constant public VERSION = "SandalStrapsFactory v0.2.1";
 
 //
 // Functions
@@ -374,6 +392,7 @@ contract SandalStrapsFactory is Factory
         feePaid
         returns (address kAddr_)
     {
+        require(_regName != 0x0);
         kAddr_ = address(new SandalStraps(msg.sender, _regName, _owner));
         Created(msg.sender, _regName, kAddr_);
     }
