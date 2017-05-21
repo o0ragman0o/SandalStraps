@@ -1,8 +1,8 @@
 /******************************************************************************\
 
 file:   SandalStraps.sol
-ver:    0.2.1
-updated:15-May-2017
+ver:    0.2.2
+updated:21-May-2017
 author: Darryl Morris (o0ragman0o)
 email:  o0ragman0o AT gmail.com
 
@@ -16,6 +16,7 @@ See MIT Licence for further details.
 
 \******************************************************************************/
 
+import "https://github.com/o0ragman0o/Withdrawable/contracts/WithdrawableInterface.sol";
 import "https://github.com/o0ragman0o/SandalStraps/contracts/Factory.sol";
 import "https://github.com/o0ragman0o/SandalStraps/contracts/Registrar.sol";
 import "https://github.com/o0ragman0o/SandalStraps/contracts/Value.sol";
@@ -28,7 +29,7 @@ contract SandalStraps is RegBase
 // Constants
 //
 
-    bytes32 constant public VERSION = "SandalStraps v0.2.1";
+    bytes32 constant public VERSION = "SandalStraps v0.2.2";
 
 //
 // State Variables
@@ -282,13 +283,13 @@ contract SandalStraps is RegBase
     
     /// @notice Withdraw the contract balance to the feeCollector address
     /// @return bool value indicating success
-    function withdraw()
+    function withdraw(uint _value)
         public
         returns (bool)
     {
         address feeCollector = metaRegistrar.namedAddress("feeCollector");
         if (0x0 == feeCollector) feeCollector = owner;
-        feeCollector.transfer(this.balance);
+        feeCollector.transfer(_value);
         return true;
     }
     
@@ -361,7 +362,7 @@ contract SandalStrapsFactory is Factory
     bytes32 constant public regName = "SandalStraps";
 
     /// @return version string
-    bytes32 constant public VERSION = "SandalStrapsFactory v0.2.1";
+    bytes32 constant public VERSION = "SandalStrapsFactory v0.2.2";
 
 //
 // Functions

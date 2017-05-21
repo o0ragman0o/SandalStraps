@@ -1,8 +1,8 @@
 /******************************************************************************\
 
 file:   StringsMap.sol
-ver:    0.2.1
-updated:15-May-2017
+ver:    0.2.2
+updated:21-May-2017
 author: Darryl Morris (o0ragman0o)
 email:  o0ragman0o AT gmail.com
 
@@ -30,7 +30,7 @@ contract StringsMap is RegBase
 // Constants
 //
 
-    bytes32 constant public VERSION = "StringsMap v0.2.1";
+    bytes32 constant public VERSION = "StringsMap v0.2.2";
 
 //
 // State Variables
@@ -104,7 +104,7 @@ contract StringsMapFactory is Factory
     bytes32 constant public regName = "StringsMap";
     
     /// @return version string
-    bytes32 constant public VERSION = "StringsMapFactory v0.2.1";
+    bytes32 constant public VERSION = "StringsMapFactory v0.2.2";
 
 //
 // Functions

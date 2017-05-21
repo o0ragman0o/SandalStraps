@@ -1,8 +1,8 @@
 /******************************************************************************\
 
 file:   BytessMap.sol
-ver:    0.2.1
-updated:9-May-2017
+ver:    0.2.2
+updated:21-May-2017
 author: Darryl Morris (o0ragman0o)
 email:  o0ragman0o AT gmail.com
 
@@ -30,7 +30,7 @@ contract BytesMap is RegBase
 // Constants
 //
 
-    bytes32 constant public VERSION = "BytesMap v0.2.1";
+    bytes32 constant public VERSION = "BytesMap v0.2.2";
 
 //
 // State Variables
@@ -104,7 +104,7 @@ contract BytesMapFactory is Factory
     bytes32 constant public regName = "BytesMap";
     
     /// @return version string
-    bytes32 constant public VERSION = "BytesMapFactory v0.2.1";
+    bytes32 constant public VERSION = "BytesMapFactory v0.2.2";
 
 //
 // Functions

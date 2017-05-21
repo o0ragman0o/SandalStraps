@@ -1,8 +1,8 @@
 /******************************************************************************\
 
 file:   RegBase.sol
-ver:    0.2.1
-updated:9-May-2017
+ver:    0.2.2
+updated:21-May-2017
 author: Darryl Morris (o0ragman0o)
 email:  o0ragman0o AT gmail.com
 
@@ -31,7 +31,7 @@ contract RegBase
 // Constants
 //
 
-    bytes32 constant public VERSION = "RegBase v0.2.1";
+    bytes32 constant public VERSION = "RegBase v0.2.2";
 
 //
 // State Variables

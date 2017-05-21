@@ -1,8 +1,8 @@
 /******************************************************************************\
 
 file:   Registrar.sol
-ver:    0.2.1
-updated:9-May-2017
+ver:    0.2.2
+updated:21-May-2017
 author: Darryl Morris (o0ragman0o)
 email:  o0ragman0o AT gmail.com
 
@@ -33,7 +33,8 @@ See MIT Licence for further details.
 
 pragma solidity ^0.4.10;
 
-import "https://github.com/o0ragman0o/SandalStraps/contracts/Factory.sol";
+// import "https://github.com/o0ragman0o/SandalStraps/contracts/Factory.sol";
+import "Factory.sol";
 
 contract Registrar is RegBase
 {
@@ -43,7 +44,7 @@ contract Registrar is RegBase
 //
 
     /// @return The contract version number
-    bytes32 constant public VERSION = "Registrar v0.2.1";
+    bytes32 constant public VERSION = "Registrar v0.2.2";
 
 //
 // State Variables
@@ -203,7 +204,7 @@ contract RegistrarFactory is Factory
 //
 
     bytes32 constant public regName = "Registrar";
-    bytes32 constant public VERSION = "RegistrarFactory v0.2.1";
+    bytes32 constant public VERSION = "RegistrarFactory v0.2.2";
 
 //
 // Functions
