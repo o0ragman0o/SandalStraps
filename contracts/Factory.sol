@@ -1,8 +1,8 @@
 /******************************************************************************\
 
 file:   Factory.sol
-ver:    0.2.1
-updated:9-May-2017
+ver:    0.2.2
+updated:21-May-2017
 author: Darryl Morris (o0ragman0o)
 email:  o0ragman0o AT gmail.com
 
@@ -100,7 +100,7 @@ contract Factory is RegBase
     }
 
     /// @notice Send contract balance to `owner`
-    function withdraw()
+    function withdraw(uint _value)
         public
         returns (bool)
     {
