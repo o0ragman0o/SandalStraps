@@ -61,7 +61,7 @@ contract Factory is Withdrawable, RegBase
 //
 
     // Is triggered when a product is created
-    event Created(address creator, bytes32 regName, address address);
+    event Created(address creator, bytes32 regName, address addr);
 
 //
 // Modifiers
