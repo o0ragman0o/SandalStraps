@@ -1,8 +1,8 @@
 /******************************************************************************\
 
 file:   SandalStraps.sol
-ver:    0.2.2
-updated:21-May-2017
+ver:    0.2.3
+updated:27-May-2017
 author: Darryl Morris (o0ragman0o)
 email:  o0ragman0o AT gmail.com
 
@@ -16,7 +16,6 @@ See MIT Licence for further details.
 
 \******************************************************************************/
 
-import "https://github.com/o0ragman0o/Withdrawable/contracts/WithdrawableInterface.sol";
 import "https://github.com/o0ragman0o/SandalStraps/contracts/Factory.sol";
 import "https://github.com/o0ragman0o/SandalStraps/contracts/Registrar.sol";
 import "https://github.com/o0ragman0o/SandalStraps/contracts/Value.sol";
@@ -29,7 +28,7 @@ contract SandalStraps is RegBase
 // Constants
 //
 
-    bytes32 constant public VERSION = "SandalStraps v0.2.2";
+    bytes32 constant public VERSION = "SandalStraps v0.2.3";
 
 //
 // State Variables
@@ -69,6 +68,16 @@ contract SandalStraps is RegBase
     }
 
 /* Public Constant functions */
+
+    // ENS resolver for registrars
+    function addr(bytes32 _regName)
+        public
+        constant
+        returns (address kAddr_)
+    {
+        kAddr_ = metaRegistrar.namedAddress(_regName);
+        require(kAddr != 0x0);
+    }
 
     // @param _registrar The name of a registered registrar
     // @param _regName The name of a registed contract to query
@@ -359,10 +368,10 @@ contract SandalStrapsFactory is Factory
 //
 
     /// @return registrar name
-    bytes32 constant public regName = "SandalStraps";
+    bytes32 constant public regName = "sandalstraps";
 
     /// @return version string
-    bytes32 constant public VERSION = "SandalStrapsFactory v0.2.2";
+    bytes32 constant public VERSION = "SandalStrapsFactory v0.2.3";
 
 //
 // Functions

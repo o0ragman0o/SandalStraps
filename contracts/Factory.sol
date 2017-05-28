@@ -1,8 +1,8 @@
 /******************************************************************************\
 
 file:   Factory.sol
-ver:    0.2.2
-updated:21-May-2017
+ver:    0.2.3
+updated:28-May-2017
 author: Darryl Morris (o0ragman0o)
 email:  o0ragman0o AT gmail.com
 
@@ -31,9 +31,10 @@ See MIT Licence for further details.
 
 pragma solidity ^0.4.10;
 
+import "https://github.com/o0ragman0o/Withdrawable/contracts/Withdrawable.sol";
 import "https://github.com/o0ragman0o/SandalStraps/contracts/RegBase.sol";
 
-contract Factory is RegBase
+contract Factory is Withdrawable, RegBase
 {
 //
 // Constants
@@ -104,10 +105,10 @@ contract Factory is RegBase
         public
         returns (bool)
     {
-        owner.transfer(this.balance);
+        owner.transfer(_value);
         return true;
     }
-    
+
     /// @notice Create a new product contract
     /// @param _regName A unique name if the the product is to be registered in
     /// a SandalStraps registrar

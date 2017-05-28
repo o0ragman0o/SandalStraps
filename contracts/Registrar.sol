@@ -1,8 +1,8 @@
 /******************************************************************************\
 
 file:   Registrar.sol
-ver:    0.2.2
-updated:21-May-2017
+ver:    0.2.3
+updated:25-May-2017
 author: Darryl Morris (o0ragman0o)
 email:  o0ragman0o AT gmail.com
 
@@ -22,19 +22,21 @@ stored in and looked up from the registered contract.
 `Registrar` is itself Registrar compliant and so can be self registered or
 registered in another `Registrar` instance.
 
-
 This software is distributed in the hope that it will be useful,
 but WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  
 See MIT Licence for further details.
 <https://opensource.org/licenses/MIT>.
 
+Release Notes:
+- added ens resolver `addr(bytes32 nodeID) constant returns(address);
+- Made regNames UTS46 compliant 
+
 \******************************************************************************/
 
 pragma solidity ^0.4.10;
 
-// import "https://github.com/o0ragman0o/SandalStraps/contracts/Factory.sol";
-import "Factory.sol";
+import "https://github.com/o0ragman0o/SandalStraps/contracts/Factory.sol";
 
 contract Registrar is RegBase
 {
@@ -44,7 +46,7 @@ contract Registrar is RegBase
 //
 
     /// @return The contract version number
-    bytes32 constant public VERSION = "Registrar v0.2.2";
+    bytes32 constant public VERSION = "Registrar v0.2.3";
 
 //
 // State Variables
@@ -104,7 +106,24 @@ contract Registrar is RegBase
         // nothing to construct
     }
 
-    /// @dev Return the registered addree named `_regName`
+    // ENS compliant interface
+    function supportsInterface(bytes4 interfaceID) constant returns (bool) {
+        return interfaceID == 0x3b3b57de;
+    }
+
+    /// @dev Return the registered address named `_regName`. (ENS interface)
+    /// @param _regName A registered name
+    /// @param kAddr_ The registered address
+    /// @return kAddr_
+    function addr(bytes32 _regName)
+        public
+        constant
+        returns (address kAddr_)
+    {
+        kAddr_ = indexedAddress[namedIndex[_regName]];
+        require(kAddr_ != 0x0);
+    }
+    /// @dev Return the registered address named `_regName`
     /// @param _regName A registered name
     /// @param addr_ The registered address
     /// @return addr_
@@ -203,8 +222,8 @@ contract RegistrarFactory is Factory
 // Constants
 //
 
-    bytes32 constant public regName = "Registrar";
-    bytes32 constant public VERSION = "RegistrarFactory v0.2.2";
+    bytes32 constant public regName = "registrar";
+    bytes32 constant public VERSION = "RegistrarFactory v0.2.3";
 
 //
 // Functions
