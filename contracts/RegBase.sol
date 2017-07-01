@@ -1,8 +1,8 @@
 /******************************************************************************\
 
 file:   RegBase.sol
-ver:    0.2.3
-updated:28-May-2017
+ver:    0.2.4
+updated:1-July-2017
 author: Darryl Morris (o0ragman0o)
 email:  o0ragman0o AT gmail.com
 
@@ -21,9 +21,15 @@ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 See MIT Licence for further details.
 <https://opensource.org/licenses/MIT>.
 
+Release notes:
+* Added state: newOwner
+* Added function: acceptOwnership()
+* Added event: ChangeOwner(address indexed _addr)
+
 \******************************************************************************/
 
-pragma solidity ^0.4.10;
+pragma solidity ^0.4.11;
+
 
 contract RegBase
 {
@@ -31,7 +37,7 @@ contract RegBase
 // Constants
 //
 
-    bytes32 constant public VERSION = "RegBase v0.2.3";
+    bytes32 constant public VERSION = "RegBase v0.2.4";
 
 //
 // State Variables
@@ -50,10 +56,17 @@ contract RegBase
     /// @dev An address permissioned to enact owner restricted functions
     /// @return owner
     address public owner;
+    
+    /// @dev An address permissioned to take ownership of the contract
+    /// @return newOwner
+    address public newOwner;
 
 //
 // Events
 //
+
+    // Triggered on change of owner address
+    event ChangeOwner(address indexed newOwner);
 
     // Triggered on change of owner address
     event ChangedOwner(address indexed oldOwner, address indexed newOwner);
@@ -97,15 +110,27 @@ contract RegBase
         selfdestruct(msg.sender);
     }
     
-    /// @notice Change the owner to `_owner`
-    /// @param _owner The address to which ownership is transfered
+    /// @notice Initiate a change of owner to `_owner`
+    /// @param _owner The address to which ownership is to be transfered
     function changeOwner(address _owner)
         public
         onlyOwner
         returns (bool)
     {
-        ChangedOwner(owner, _owner);
-        owner = _owner;
+        ChangeOwner(_owner);
+        newOwner = _owner;
+        return true;
+    }
+    
+    // @notice Finalise change of ownership to newOwner
+    function acceptOwnership()
+        public
+        returns (bool)
+    {
+        require(msg.sender == newOwner);
+        ChangedOwner(owner, msg.sender);
+        owner = newOwner;
+        delete newOwner;
         return true;
     }
 
