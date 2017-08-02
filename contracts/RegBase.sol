@@ -1,8 +1,8 @@
 /******************************************************************************\
 
 file:   RegBase.sol
-ver:    0.2.4
-updated:1-July-2017
+ver:    0.3.0
+updated:1-Aug-2017
 author: Darryl Morris (o0ragman0o)
 email:  o0ragman0o AT gmail.com
 
@@ -22,27 +22,16 @@ See MIT Licence for further details.
 <https://opensource.org/licenses/MIT>.
 
 Release notes:
-* Added state: newOwner
-* Added function: acceptOwnership()
-* Added event: ChangeOwner(address indexed _addr)
+* Using abstract contract as pattern rather than interface
+* Underscored event parameters to differentiate from identifiers of the same name
+* Move state declarations into abstract contract
 
 \******************************************************************************/
 
-pragma solidity ^0.4.11;
+pragma solidity ^0.4.13;
 
-
-contract RegBase
+contract RegBaseAbstract
 {
-//
-// Constants
-//
-
-    bytes32 constant public VERSION = "RegBase v0.2.4";
-
-//
-// State Variables
-//
-    
     /// @dev A static identifier, set in the constructor and used for registrar
     /// lookup
     /// @return Registrar name SandalStraps registrars
@@ -65,15 +54,51 @@ contract RegBase
 // Events
 //
 
-    // Triggered on change of owner address
-    event ChangeOwner(address indexed newOwner);
+    /// @dev Triggered on initiation of change owner address
+    event ChangeOwnerTo(address indexed _newOwner);
 
-    // Triggered on change of owner address
-    event ChangedOwner(address indexed oldOwner, address indexed newOwner);
+    /// @dev Triggered on change of owner address
+    event ChangedOwner(address indexed _oldOwner, address indexed _newOwner);
 
-    // Triggered on change of resource
-    event ChangedResource(bytes32 indexed resource);
+    /// @dev Triggered on change of resource
+    event ChangedResource(bytes32 indexed _resource);
 
+//
+// Function Abstracts
+//
+
+    /// @notice Will selfdestruct the contract
+    function destroy() public;
+
+    /// @notice Initiate a change of owner to `_owner`
+    /// @param _owner The address to which ownership is to be transfered
+    function changeOwner(address _owner) public returns (bool);
+
+    /// @notice Finalise change of ownership to newOwner
+    function acceptOwnership() public returns (bool);
+
+    /// @notice Change the resource to `_resource`
+    /// @param _resource A key or short text to be stored as the resource.
+    function changeResource(bytes32 _resource) public returns (bool);
+}
+
+
+contract RegBase is RegBaseAbstract
+{
+//
+// Constants
+//
+
+    bytes32 constant public VERSION = "RegBase v0.3.0";
+
+//
+// State Variables
+//
+
+    // Declared in RegBaseAbstract for reasons that an inherited abstract
+    // function is not seen as implimented by a public state identifier of
+    // the same name.
+    
 //
 // Modifiers
 //
@@ -117,12 +142,12 @@ contract RegBase
         onlyOwner
         returns (bool)
     {
-        ChangeOwner(_owner);
+        ChangeOwnerTo(_owner);
         newOwner = _owner;
         return true;
     }
     
-    // @notice Finalise change of ownership to newOwner
+    /// @notice Finalise change of ownership to newOwner
     function acceptOwnership()
         public
         returns (bool)
