@@ -1,8 +1,8 @@
 /******************************************************************************\
 
 file:   Factory.sol
-ver:    0.2.3
-updated:28-May-2017
+ver:    0.2.4
+updated:1-July-2017
 author: Darryl Morris (o0ragman0o)
 email:  o0ragman0o AT gmail.com
 
@@ -29,7 +29,7 @@ See MIT Licence for further details.
 
 \******************************************************************************/
 
-pragma solidity ^0.4.10;
+pragma solidity ^0.4.11;
 
 import "https://github.com/o0ragman0o/Withdrawable/contracts/Withdrawable.sol";
 import "https://github.com/o0ragman0o/SandalStraps/contracts/RegBase.sol";

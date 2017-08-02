@@ -1,8 +1,8 @@
 /******************************************************************************\
 
 file:   StringsMap.sol
-ver:    0.2.3
-updated:28-May-2017
+ver:    0.2.4
+updated:1-July-2017
 author: Darryl Morris (o0ragman0o)
 email:  o0ragman0o AT gmail.com
 
@@ -18,9 +18,12 @@ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 See MIT Licence for further details.
 <https://opensource.org/licenses/MIT>.
 
+Release notes:
+- S0lidity 0.4.11
+- Using RegBase 0.2.4
 \******************************************************************************/
 
-pragma solidity ^0.4.10;
+pragma solidity ^0.4.11;
 
 import "https://github.com/o0ragman0o/SandalStraps/contracts/Factory.sol";
 
@@ -30,7 +33,7 @@ contract StringsMap is RegBase
 // Constants
 //
 
-    bytes32 constant public VERSION = "StringsMap v0.2.3";
+    bytes32 constant public VERSION = "StringsMap v0.2.4";
 
 //
 // State Variables
@@ -104,7 +107,7 @@ contract StringsMapFactory is Factory
     bytes32 constant public regName = "stringsmap";
     
     /// @return version string
-    bytes32 constant public VERSION = "StringsMapFactory v0.2.3";
+    bytes32 constant public VERSION = "StringsMapFactory v0.2.4";
 
 //
 // Functions

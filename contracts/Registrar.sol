@@ -1,8 +1,8 @@
 /******************************************************************************\
 
 file:   Registrar.sol
-ver:    0.2.3
-updated:25-May-2017
+ver:    0.2.4
+updated:1-Jul-2017
 author: Darryl Morris (o0ragman0o)
 email:  o0ragman0o AT gmail.com
 
@@ -29,12 +29,12 @@ See MIT Licence for further details.
 <https://opensource.org/licenses/MIT>.
 
 Release Notes:
-- added ens resolver `addr(bytes32 nodeID) constant returns(address);
-- Made regNames UTS46 compliant 
+- Update Solidity 0.4.11
+- Using RegBase 0.2.4
 
 \******************************************************************************/
 
-pragma solidity ^0.4.10;
+pragma solidity ^0.4.11;
 
 import "https://github.com/o0ragman0o/SandalStraps/contracts/Factory.sol";
 
@@ -46,7 +46,7 @@ contract Registrar is RegBase
 //
 
     /// @return The contract version number
-    bytes32 constant public VERSION = "Registrar v0.2.3";
+    bytes32 constant public VERSION = "Registrar v0.2.4";
 
 //
 // State Variables
@@ -223,7 +223,7 @@ contract RegistrarFactory is Factory
 //
 
     bytes32 constant public regName = "registrar";
-    bytes32 constant public VERSION = "RegistrarFactory v0.2.3";
+    bytes32 constant public VERSION = "RegistrarFactory v0.2.4";
 
 //
 // Functions

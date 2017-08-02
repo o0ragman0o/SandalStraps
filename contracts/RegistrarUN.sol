@@ -1,8 +1,8 @@
 /******************************************************************************\
 
 file:   RegistrarUN.sol
-ver:    0.2.3
-updated:27-May-2017
+ver:    0.2.4
+updated:1-July-2017
 author: Darryl Morris (o0ragman0o)
 email:  o0ragman0o AT gmail.com
 
@@ -29,9 +29,13 @@ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 See MIT Licence for further details.
 <https://opensource.org/licenses/MIT>.
 
+Release notes:
+- Solidity 0.4.11
+- Using Regbase 0.2.4
+
 \******************************************************************************/
 
-pragma solidity ^0.4.10;
+pragma solidity ^0.4.11;
 
 import "https://github.com/o0ragman0o/SandalStraps/contracts/Factory.sol";
 
@@ -43,7 +47,7 @@ contract Registrar is RegBase
 //
 
     /// @return The contract version number
-    bytes32 constant public VERSION = "RegistrarUN v0.2.3";
+    bytes32 constant public VERSION = "RegistrarUN v0.2.4";
 
 //
 // State Variables
@@ -207,7 +211,7 @@ contract RegistrarUNFactory is Factory
 //
 
     bytes32 constant public regName = "registrarun";
-    bytes32 constant public VERSION = "RegistrarUNFactory v0.2.3";
+    bytes32 constant public VERSION = "RegistrarUNFactory v0.2.4";
 
 //
 // Functions

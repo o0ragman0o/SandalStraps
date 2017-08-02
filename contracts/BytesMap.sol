@@ -1,8 +1,8 @@
 /******************************************************************************\
 
 file:   BytessMap.sol
-ver:    0.2.3
-updated:27-May-2017
+ver:    0.2.4
+updated:1-July-2017
 author: Darryl Morris (o0ragman0o)
 email:  o0ragman0o AT gmail.com
 
@@ -20,7 +20,7 @@ See MIT Licence for further details.
 
 \******************************************************************************/
 
-pragma solidity ^0.4.10;
+pragma solidity ^0.4.11;
 
 import "https://github.com/o0ragman0o/SandalStraps/contracts/Factory.sol";
 
@@ -30,7 +30,7 @@ contract BytesMap is RegBase
 // Constants
 //
 
-    bytes32 constant public VERSION = "BytesMap v0.2.3";
+    bytes32 constant public VERSION = "BytesMap v0.2.4";
 
 //
 // State Variables
@@ -104,7 +104,7 @@ contract BytesMapFactory is Factory
     bytes32 constant public regName = "bytesmap";
     
     /// @return version string
-    bytes32 constant public VERSION = "BytesMapFactory v0.2.3";
+    bytes32 constant public VERSION = "BytesMapFactory v0.2.4";
 
 //
 // Functions
