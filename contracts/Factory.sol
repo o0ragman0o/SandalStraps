@@ -1,8 +1,8 @@
 /******************************************************************************\
 
 file:   Factory.sol
-ver:    0.2.4
-updated:1-July-2017
+ver:    0.3.0
+updated:2-Aug-2017
 author: Darryl Morris (o0ragman0o)
 email:  o0ragman0o AT gmail.com
 
@@ -27,14 +27,20 @@ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 See MIT Licence for further details.
 <https://opensource.org/licenses/MIT>.
 
+Release Notes
+-------------
+* using v0.3.0 RegBase
+* Indexed and underscored event parameter names to differentiate from
+  identifiers of same name.
+* Removed Withdrawable from inheretance
+
 \******************************************************************************/
 
 pragma solidity ^0.4.11;
 
-import "https://github.com/o0ragman0o/Withdrawable/contracts/Withdrawable.sol";
 import "https://github.com/o0ragman0o/SandalStraps/contracts/RegBase.sol";
 
-contract Factory is Withdrawable, RegBase
+contract Factory is RegBase
 {
 //
 // Constants
@@ -61,7 +67,7 @@ contract Factory is Withdrawable, RegBase
 //
 
     // Is triggered when a product is created
-    event Created(address creator, bytes32 regName, address addr);
+    event Created(address indexed _creator, bytes32 indexed _regName, address indexed _addr);
 
 //
 // Modifiers
