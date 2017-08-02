@@ -534,6 +534,7 @@ Allows a byte array owner or `BytesMap` owner to delete a stored byte array.
 
 `_hash` The hash key of the byte array to delete
 
+___
 ## Fees and Fee Collection
 The `SandalStraps` contract and compliant factories can collect optional fees.
 The fees collected by the SandalStraps instance can be withdrawn to its `owner` 
