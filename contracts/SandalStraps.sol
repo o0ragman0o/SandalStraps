@@ -1,8 +1,8 @@
 /******************************************************************************\
 
 file:   SandalStraps.sol
-ver:    0.2.4
-updated:1-July-2017
+ver:    0.3.0
+updated:1-Aug-2017
 author: Darryl Morris (o0ragman0o)
 email:  o0ragman0o AT gmail.com
 
@@ -15,8 +15,10 @@ See MIT Licence for further details.
 <https://opensource.org/licenses/MIT>.
 
 Release Notes:
-- Solidity 0.4.11
-- using RegBase 0.2.4
+* Solidity 0.4.13
+* using RegBase 0.3.0
+* Underscorded event params
+* double underscored __initFuse
 
 \******************************************************************************/
 
@@ -24,7 +26,7 @@ import "https://github.com/o0ragman0o/SandalStraps/contracts/Factory.sol";
 import "https://github.com/o0ragman0o/SandalStraps/contracts/Registrar.sol";
 import "https://github.com/o0ragman0o/SandalStraps/contracts/Value.sol";
 
-pragma solidity ^0.4.11;
+pragma solidity ^0.4.13;
 
 contract SandalStraps is RegBase
 {
@@ -32,14 +34,14 @@ contract SandalStraps is RegBase
 // Constants
 //
 
-    bytes32 constant public VERSION = "SandalStraps v0.2.4";
+    bytes32 constant public VERSION = "SandalStraps v0.3.0";
 
 //
 // State Variables
 //
 
     // Value to track contract initialization state 
-    uint8 public _initFuse = 1;
+    uint8 public __initFuse = 1;
     
     // An embedded Registrar factory to bootstrap the contract 
     RegistrarFactory public bootstrap;
@@ -51,8 +53,8 @@ contract SandalStraps is RegBase
 // Events
 //
 
-    event FactoryAdded(bytes32 indexed regName, address indexed addr);
-    event ProductCreated(bytes32 indexed regName, address indexed addr);
+    event FactoryAdded(bytes32 indexed _regName, address indexed _addr);
+    event ProductCreated(bytes32 indexed _regName, address indexed _addr);
     
 //
 // Functions
@@ -80,7 +82,7 @@ contract SandalStraps is RegBase
         returns (address kAddr_)
     {
         kAddr_ = metaRegistrar.namedAddress(_regName);
-        require(kAddr != 0x0);
+        require(kAddr_ != 0x0);
     }
 
     // @param _registrar The name of a registered registrar
@@ -150,9 +152,9 @@ contract SandalStraps is RegBase
         public
         onlyOwner
     {
-        require(1 == _initFuse);
+        require(1 == __initFuse);
         metaRegistrar = Registrar(bootstrap.createNew("metaRegistrar", 0));
-        _initFuse++;
+        __initFuse++;
     }
 
     /// @notice Self registers this SandalStraps instant, metaRegistrar then 
@@ -162,11 +164,11 @@ contract SandalStraps is RegBase
         public
         onlyOwner
     {
-        require(2 == _initFuse);
+        require(2 == __initFuse);
         metaRegistrar.add(this);
         metaRegistrar.add(metaRegistrar);
         metaRegistrar.add(bootstrap.createNew("factories", 0));
-        _initFuse++;
+        __initFuse++;
     }
     
     /// @notice Registers the 'bootstap' registrar factory in the 'factories'
@@ -176,10 +178,10 @@ contract SandalStraps is RegBase
         public
         onlyOwner
     {
-        require(3 == _initFuse);
+        require(3 == __initFuse);
         Registrar(metaRegistrar.namedAddress("factories")).add(bootstrap);
         metaRegistrar.add(bootstrap.createNew("Registrar", 0));
-        delete _initFuse;
+        delete __initFuse;
     }
     
     /// @notice Register a Sandalstraps compliant fractory at address `_kAddr`
@@ -375,7 +377,7 @@ contract SandalStrapsFactory is Factory
     bytes32 constant public regName = "sandalstraps";
 
     /// @return version string
-    bytes32 constant public VERSION = "SandalStrapsFactory v0.2.4";
+    bytes32 constant public VERSION = "SandalStrapsFactory v0.3.0";
 
 //
 // Functions

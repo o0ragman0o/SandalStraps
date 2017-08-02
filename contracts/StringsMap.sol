@@ -1,8 +1,8 @@
 /******************************************************************************\
 
 file:   StringsMap.sol
-ver:    0.2.4
-updated:1-July-2017
+ver:    0.3.0
+updated:1-Aug-2017
 author: Darryl Morris (o0ragman0o)
 email:  o0ragman0o AT gmail.com
 
@@ -18,12 +18,15 @@ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 See MIT Licence for further details.
 <https://opensource.org/licenses/MIT>.
 
-Release notes:
-- S0lidity 0.4.11
-- Using RegBase 0.2.4
+Release notes
+-------------
+* S0lidity 0.4.13
+* Using RegBase 0.3.0
+* underscored event paramter
+* Changed clear(bytes32 _hash) to clearHash(bytes32 _hash) as JS cannot overload
 \******************************************************************************/
 
-pragma solidity ^0.4.11;
+pragma solidity ^0.4.13;
 
 import "https://github.com/o0ragman0o/SandalStraps/contracts/Factory.sol";
 
@@ -33,7 +36,7 @@ contract StringsMap is RegBase
 // Constants
 //
 
-    bytes32 constant public VERSION = "StringsMap v0.2.4";
+    bytes32 constant public VERSION = "StringsMap v0.3.0";
 
 //
 // State Variables
@@ -45,7 +48,7 @@ contract StringsMap is RegBase
 // Events
 //
 
-    event Stored(bytes32 indexed hash);
+    event Stored(bytes32 indexed _hash);
 
 //
 // Functions
@@ -85,7 +88,7 @@ contract StringsMap is RegBase
     
     /// @notice Clear string at hash key of `_hash`
     /// @dev can be cleared by ownr or string owner
-    function clear(bytes32 _hash)
+    function clearHash(bytes32 _hash)
         public
         returns (bool)
     {
@@ -107,7 +110,7 @@ contract StringsMapFactory is Factory
     bytes32 constant public regName = "stringsmap";
     
     /// @return version string
-    bytes32 constant public VERSION = "StringsMapFactory v0.2.4";
+    bytes32 constant public VERSION = "StringsMapFactory v0.3.0";
 
 //
 // Functions

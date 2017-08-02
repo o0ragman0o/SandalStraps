@@ -1,7 +1,7 @@
 /******************************************************************************\
 
 file:   BytessMap.sol
-ver:    0.2.4
+ver:    0.3.0
 updated:1-July-2017
 author: Darryl Morris (o0ragman0o)
 email:  o0ragman0o AT gmail.com
@@ -18,9 +18,17 @@ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 See MIT Licence for further details.
 <https://opensource.org/licenses/MIT>.
 
+Release Notes
+-------------
+* Using RegBase v0.3.0
+* Solidity 0.4.13
+* underscord event paramter names
+* Changed clear(bytes32 _hash) to clearHash(bytes32 _hash) as JS cannot overload
+
+
 \******************************************************************************/
 
-pragma solidity ^0.4.11;
+pragma solidity ^0.4.13;
 
 import "https://github.com/o0ragman0o/SandalStraps/contracts/Factory.sol";
 
@@ -30,7 +38,7 @@ contract BytesMap is RegBase
 // Constants
 //
 
-    bytes32 constant public VERSION = "BytesMap v0.2.4";
+    bytes32 constant public VERSION = "BytesMap v0.3.0";
 
 //
 // State Variables
@@ -42,7 +50,7 @@ contract BytesMap is RegBase
 // Events
 //
 
-    event Stored(bytes32 indexed hash);
+    event Stored(bytes32 indexed _hash);
 
 //
 // Functions
@@ -82,7 +90,7 @@ contract BytesMap is RegBase
     
     /// @notice Clear string at hash key of `_hash`
     /// @dev can be cleared by ownr or string owner
-    function clear(bytes32 _hash)
+    function clearHash(bytes32 _hash)
         public
         returns (bool)
     {
@@ -104,7 +112,7 @@ contract BytesMapFactory is Factory
     bytes32 constant public regName = "bytesmap";
     
     /// @return version string
-    bytes32 constant public VERSION = "BytesMapFactory v0.2.4";
+    bytes32 constant public VERSION = "BytesMapFactory v0.3.0";
 
 //
 // Functions

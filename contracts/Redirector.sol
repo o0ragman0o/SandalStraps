@@ -1,6 +1,6 @@
 /******************************************************************************\
 
-file:   Value.sol
+file:   Redirector.sol
 ver:    0.3.0
 updated:1-Aug-2017
 author: Darryl Morris (o0ragman0o)
@@ -8,11 +8,7 @@ email:  o0ragman0o AT gmail.com
 
 This file is part of the SandalStraps framework
 
-`Value` is a SandalStraps Registrar compliant ownable metric contract.
-It can be set by the owner and `value()` read publicly returning a `uint256`
-value.
-The `function value() returns (uint);` API is intended as a modualar parameter
-or value source for other utilising contracts. 
+Redirectory acts as a proxy address for payment pass-through.
 
 This software is distributed in the hope that it will be useful,
 but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -23,7 +19,8 @@ See MIT Licence for further details.
 Release Notes
 -------------
 * Solidity 0.4.13
-* Using RegBase 0.3.0
+* Regbase 0.3.0
+* Removed overloaded `owner` state
 
 \******************************************************************************/
 
@@ -31,40 +28,66 @@ pragma solidity ^0.4.13;
 
 import "https://github.com/o0ragman0o/SandalStraps/contracts/Factory.sol";
 
-contract Value is RegBase
-{
-    bytes32 constant public VERSION = "Value v0.3.0";
-    uint public value;
+contract Redirector is RegBase {
+//
+// Constants
+//
 
-    function Value(address _creator, bytes32 _regName, address _owner)
+    bytes32 constant public VERSION = "Redirector v0.3.0";
+
+//
+// State
+//
+
+    address public payTo;
+    
+//
+// Events
+//
+    
+    event Redirect(address indexed _from, address indexed _payTo, uint _value);
+
+//
+// Functions
+//
+
+    function Redirector(address _creator, bytes32 _regName, address _owner)
         RegBase(_creator, _regName, _owner)
     {
-        // nothing to construct
+        payTo = owner;
     }
     
-    function set(uint _value) returns (bool)
+    function () payable 
     {
-        require(msg.sender == owner);
-        value = _value;
+        require(msg.value > 0);
+        Redirect(msg.sender, payTo, msg.value);
+        payTo.transfer(msg.value);
+    }
+    
+    function changePayTo(address _payTo)
+        onlyOwner
+        returns (bool)
+    {
+        require(_payTo != address(this) && _payTo != 0x0);
+        payTo = _payTo;
         return true;
     }
 }
 
-
-contract ValueFactory is Factory
+contract RedirectorFactory is Factory
 {
 //
 // Constants
 //
 
     /// @return registrar name
-    bytes32 constant public regName = "value";
-
+    bytes32 constant public regName = "redirector";
+    
     /// @return version string
-    bytes32 constant public VERSION = "ValueFactory v0.3.0";
+    bytes32 constant public VERSION = "RedirectorFactory v0.3.0";
 
 //
-// Function
+// Functions
 //
 
     /// @param _creator The calling address passed through by a factory,
@@ -74,7 +97,8 @@ contract ValueFactory is Factory
     /// owner
     /// @dev On 0x0 value for _owner or _creator, ownership precedence is:
     /// `_owner` else `_creator` else msg.sender
-    function ValueFactory(address _creator, bytes32 _regName, address _owner)
+    function RedirectorFactory(
+            address _creator, bytes32 _regName, address _owner)
         Factory(_creator, _regName, _owner)
     {
         // nothing to construct
@@ -92,7 +116,7 @@ contract ValueFactory is Factory
         returns (address kAddr_)
     {
         require(_regName != 0x0);
-        kAddr_ = address(new Value(msg.sender, _regName, _owner));
+        kAddr_ = address(new Redirector(msg.sender, _regName, _owner));
         Created(msg.sender, _regName, kAddr_);
     }
 }
