@@ -31,7 +31,7 @@ are created by a registered factory.  They may be independent from the
 framework or be an interactive component unto it.
 * **Auxiliary** contracts support the framework by providing managment controls
 such as fee values or string mapping for contract resource lookup
-
+___
 # API
 ## RegBase API
 All `SandalStraps` compliant contracts presents the following public functions:
@@ -128,6 +128,7 @@ event ChangedOwner(address indexed _oldOwner, address indexed _newOwner);
 ```
 Triggered on change of owner address
 
+___
 ## Registrar API
 A registrar is a triangular lookup data structure with keys of *contract address
 (kAddr)*, *contract name (regName)* and *registration index (idx)*
@@ -218,6 +219,7 @@ event Removed(bytes32 indexed _regName, address indexed _address);
 ```
 Triggered when an address is unregistered
     
+___
 
 ## Factory API
 A factory embeds the bytecode of a product contract which can be deployed by
@@ -226,7 +228,8 @@ calling `createNew()`
 In addition to the base compliant API, a `SandalStraps` `Factory` contract 
 exposes a minimum of the following functions:
 ```
-[{"constant":false,"inputs":[{"name":"_resource","type":"bytes32"}],"name":"changeResource","outputs":[{"name":"","type":"bool"}],"payable":false,"type":"function"},{"constant":true,"inputs":[],"name":"regName","outputs":[{"name":"","type":"bytes32"}],"payable":false,"type":"function"},{"constant":false,"inputs":[{"name":"_value","type":"uint256"}],"name":"withdraw","outputs":[{"name":"","type":"bool"}],"payable":false,"type":"function"},{"constant":true,"inputs":[],"name":"resource","outputs":[{"name":"","type":"bytes32"}],"payable":false,"type":"function"},{"constant":true,"inputs":[],"name":"value","outputs":[{"name":"","type":"uint256"}],"payable":false,"type":"function"},{"constant":false,"inputs":[{"name":"_fee","type":"uint256"}],"name":"set","outputs":[{"name":"","type":"bool"}],"payable":false,"type":"function"},{"constant":false,"inputs":[],"name":"acceptOwnership","outputs":[{"name":"","type":"bool"}],"payable":false,"type":"function"},{"constant":false,"inputs":[],"name":"destroy","outputs":[],"payable":false,"type":"function"},{"constant":true,"inputs":[],"name":"owner","outputs":[{"name":"","type":"address"}],"payable":false,"type":"function"},{"constant":false,"inputs":[{"name":"_owner","type":"address"}],"name":"changeOwner","outputs":[{"name":"","type":"bool"}],"payable":false,"type":"function"},{"constant":true,"inputs":[],"name":"newOwner","outputs":[{"name":"","type":"address"}],"payable":false,"type":"function"},{"constant":false,"inputs":[{"name":"_regName","type":"bytes32"},{"name":"_owner","type":"address"}],"name":"createNew","outputs":[{"name":"kAddr_","type":"address"}],"payable":true,"type":"function"},{"constant":true,"inputs":[],"name":"VERSION","outputs":[{"name":"","type":"bytes32"}],"payable":false,"type":"function"},{"inputs":[{"name":"_creator","type":"address"},{"name":"_regName","type":"bytes32"},{"name":"_owner","type":"address"}],"payable":false,"type":"constructor"},{"anonymous":false,"inputs":[{"indexed":true,"name":"_creator","type":"address"},{"indexed":true,"name":"_regName","type":"bytes32"},{"indexed":true,"name":"_addr","type":"address"}],"name":"Created","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"name":"_newOwner","type":"address"}],"name":"ChangeOwnerTo","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"name":"_oldOwner","type":"address"},{"indexed":true,"name":"_newOwner","type":"address"}],"name":"ChangedOwner","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"name":"_resource","type":"bytes32"}],"name":"ChangedResource","type":"event"}]```
+[{"constant":false,"inputs":[{"name":"_resource","type":"bytes32"}],"name":"changeResource","outputs":[{"name":"","type":"bool"}],"payable":false,"type":"function"},{"constant":true,"inputs":[],"name":"regName","outputs":[{"name":"","type":"bytes32"}],"payable":false,"type":"function"},{"constant":false,"inputs":[{"name":"_value","type":"uint256"}],"name":"withdraw","outputs":[{"name":"","type":"bool"}],"payable":false,"type":"function"},{"constant":true,"inputs":[],"name":"resource","outputs":[{"name":"","type":"bytes32"}],"payable":false,"type":"function"},{"constant":true,"inputs":[],"name":"value","outputs":[{"name":"","type":"uint256"}],"payable":false,"type":"function"},{"constant":false,"inputs":[{"name":"_fee","type":"uint256"}],"name":"set","outputs":[{"name":"","type":"bool"}],"payable":false,"type":"function"},{"constant":false,"inputs":[],"name":"acceptOwnership","outputs":[{"name":"","type":"bool"}],"payable":false,"type":"function"},{"constant":false,"inputs":[],"name":"destroy","outputs":[],"payable":false,"type":"function"},{"constant":true,"inputs":[],"name":"owner","outputs":[{"name":"","type":"address"}],"payable":false,"type":"function"},{"constant":false,"inputs":[{"name":"_owner","type":"address"}],"name":"changeOwner","outputs":[{"name":"","type":"bool"}],"payable":false,"type":"function"},{"constant":true,"inputs":[],"name":"newOwner","outputs":[{"name":"","type":"address"}],"payable":false,"type":"function"},{"constant":false,"inputs":[{"name":"_regName","type":"bytes32"},{"name":"_owner","type":"address"}],"name":"createNew","outputs":[{"name":"kAddr_","type":"address"}],"payable":true,"type":"function"},{"constant":true,"inputs":[],"name":"VERSION","outputs":[{"name":"","type":"bytes32"}],"payable":false,"type":"function"},{"inputs":[{"name":"_creator","type":"address"},{"name":"_regName","type":"bytes32"},{"name":"_owner","type":"address"}],"payable":false,"type":"constructor"},{"anonymous":false,"inputs":[{"indexed":true,"name":"_creator","type":"address"},{"indexed":true,"name":"_regName","type":"bytes32"},{"indexed":true,"name":"_addr","type":"address"}],"name":"Created","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"name":"_newOwner","type":"address"}],"name":"ChangeOwnerTo","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"name":"_oldOwner","type":"address"},{"indexed":true,"name":"_newOwner","type":"address"}],"name":"ChangedOwner","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"name":"_resource","type":"bytes32"}],"name":"ChangedResource","type":"event"}]
+```
 
 ### createNew
 ```
@@ -267,7 +270,7 @@ event Created(address indexed _creator, bytes32 indexed _regName, address indexe
 ```
 Is triggered when a product is created
 
-
+___
 ## SandalStraps Kernel Contract API
 
 The `SandalStraps` kernel contains a minimal Registrar factory called 
@@ -405,7 +408,7 @@ event ProductCreated(bytes32 indexed _regName, address indexed _addr);
 ```
 Triggered when a factory product contract is created
 
-
+___
 ## Value API (Wrapped Types)
 An applied framework may require publicly accessible control values, e.g. fees, 
 to be kept. For this purpose atomic store types may be wrapped in a compliant 
@@ -433,7 +436,7 @@ Sets the value of the `Value` state variable
 
 `_value` The value to be stored
 
-
+___
 ## StringsMap API
 The `StringsMap` contract is a `SandalStraps` compliant contract that stores
 owned strings in a `bytes32 => string` mapping.  This can be useful for storing
@@ -482,7 +485,7 @@ Allows a string owner or `StringMap` owner to delete a stored string.
 
 `_hash` The hash key of the string to delete
 
-
+___
 ## BytesMap API
 The `BytesMap` contract is a `SandalStraps` compliant contract that stores
 owned byte arrays in a `bytes32 => bytes` mapping.  This can be useful for storing
@@ -561,6 +564,7 @@ registrar and also create a registrar of the factory's `regName` if it didn't
 already exist.  When a product is created through `newFromfactory()`, it is 
 entered into the registrar of its factory's name.
 
+___
 ## Writing SandalStraps Compliant Contracts
 
 Any contract can be written as `SandalStraps` compliant by importing 
