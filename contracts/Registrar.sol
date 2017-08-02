@@ -1,8 +1,8 @@
 /******************************************************************************\
 
 file:   Registrar.sol
-ver:    0.2.4
-updated:1-Jul-2017
+ver:    0.3.0
+updated:1-Aug-2017
 author: Darryl Morris (o0ragman0o)
 email:  o0ragman0o AT gmail.com
 
@@ -28,13 +28,15 @@ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 See MIT Licence for further details.
 <https://opensource.org/licenses/MIT>.
 
-Release Notes:
-- Update Solidity 0.4.11
-- Using RegBase 0.2.4
+Release Notes
+-------------
+* Solidity 0.4.13
+* Using RegBase 0.3.0
+* underscored and indexed event parameters
 
 \******************************************************************************/
 
-pragma solidity ^0.4.11;
+pragma solidity ^0.4.13;
 
 import "https://github.com/o0ragman0o/SandalStraps/contracts/Factory.sol";
 
@@ -46,7 +48,7 @@ contract Registrar is RegBase
 //
 
     /// @return The contract version number
-    bytes32 constant public VERSION = "Registrar v0.2.4";
+    bytes32 constant public VERSION = "Registrar v0.3.0";
 
 //
 // State Variables
@@ -84,10 +86,10 @@ contract Registrar is RegBase
 //
 
     // Triggered when an address is registered
-    event Registered(bytes32 regName, address _address);
+    event Registered(bytes32 indexed _regName, address indexed _address);
     
     // Triggered when an address is unregistered
-    event Removed(bytes32 regName, address _address);
+    event Removed(bytes32 indexed _regName, address indexed _address);
     
 //
 // Functions
@@ -223,7 +225,7 @@ contract RegistrarFactory is Factory
 //
 
     bytes32 constant public regName = "registrar";
-    bytes32 constant public VERSION = "RegistrarFactory v0.2.4";
+    bytes32 constant public VERSION = "RegistrarFactory v0.3.0";
 
 //
 // Functions
