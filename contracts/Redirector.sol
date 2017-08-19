@@ -1,8 +1,8 @@
 /******************************************************************************\
 
 file:   Redirector.sol
-ver:    0.3.0
-updated:1-Aug-2017
+ver:    0.3.1
+updated:19-Aug-2017
 author: Darryl Morris (o0ragman0o)
 email:  o0ragman0o AT gmail.com
 
@@ -18,22 +18,21 @@ See MIT Licence for further details.
 
 Release Notes
 -------------
-* Solidity 0.4.13
-* Regbase 0.3.0
-* Removed overloaded `owner` state
+* local directory imports
+* removed regName requirment in factory as RegBase constructor now requires regName
 
 \******************************************************************************/
 
 pragma solidity ^0.4.13;
 
-import "https://github.com/o0ragman0o/SandalStraps/contracts/Factory.sol";
+import "./Factory.sol";
 
 contract Redirector is RegBase {
 //
 // Constants
 //
 
-    bytes32 constant public VERSION = "Redirector v0.3.0";
+    bytes32 constant public VERSION = "Redirector v0.3.1";
 
 //
 // State
@@ -84,7 +83,7 @@ contract RedirectorFactory is Factory
     bytes32 constant public regName = "redirector";
     
     /// @return version string
-    bytes32 constant public VERSION = "RedirectorFactory v0.3.0";
+    bytes32 constant public VERSION = "RedirectorFactory v0.3.1";
 
 //
 // Functions
@@ -115,7 +114,6 @@ contract RedirectorFactory is Factory
         feePaid
         returns (address kAddr_)
     {
-        require(_regName != 0x0);
         kAddr_ = address(new Redirector(msg.sender, _regName, _owner));
         Created(msg.sender, _regName, kAddr_);
     }

@@ -1,8 +1,8 @@
 /******************************************************************************\
 
 file:   BytessMap.sol
-ver:    0.3.0
-updated:1-July-2017
+ver:    0.3.1
+updated:19-Aug-2017
 author: Darryl Morris (o0ragman0o)
 email:  o0ragman0o AT gmail.com
 
@@ -20,17 +20,15 @@ See MIT Licence for further details.
 
 Release Notes
 -------------
-* Using RegBase v0.3.0
-* Solidity 0.4.13
-* underscord event paramter names
-* Changed clear(bytes32 _hash) to clearHash(bytes32 _hash) as JS cannot overload
+* local directory imports
+* removed regName requirment in factory as RegBase constructor now requires regName
 
 
 \******************************************************************************/
 
 pragma solidity ^0.4.13;
 
-import "https://github.com/o0ragman0o/SandalStraps/contracts/Factory.sol";
+import "./Factory.sol";
 
 contract BytesMap is RegBase
 {
@@ -38,7 +36,7 @@ contract BytesMap is RegBase
 // Constants
 //
 
-    bytes32 constant public VERSION = "BytesMap v0.3.0";
+    bytes32 constant public VERSION = "BytesMap v0.3.1";
 
 //
 // State Variables
@@ -112,7 +110,7 @@ contract BytesMapFactory is Factory
     bytes32 constant public regName = "bytesmap";
     
     /// @return version string
-    bytes32 constant public VERSION = "BytesMapFactory v0.3.0";
+    bytes32 constant public VERSION = "BytesMapFactory v0.3.1";
 
 //
 // Functions
@@ -143,7 +141,6 @@ contract BytesMapFactory is Factory
         feePaid
         returns (address kAddr_)
     {
-        require(_regName != 0x0);
         kAddr_ = address(new BytesMap(msg.sender, _regName, _owner));
         Created(msg.sender, _regName, kAddr_);
     }

@@ -1,8 +1,8 @@
 /******************************************************************************\
 
 file:   RegBase.sol
-ver:    0.3.0
-updated:1-Aug-2017
+ver:    0.3.1
+updated:19-Aug-2017
 author: Darryl Morris (o0ragman0o)
 email:  o0ragman0o AT gmail.com
 
@@ -22,10 +22,7 @@ See MIT Licence for further details.
 <https://opensource.org/licenses/MIT>.
 
 Release notes:
-* Using abstract contract as pattern rather than interface
-* Underscored event parameters to differentiate from identifiers of the same name
-* Move state declarations into abstract contract
-
+* Constructor now requires non-empty `_regName`
 \******************************************************************************/
 
 pragma solidity ^0.4.13;
@@ -89,7 +86,7 @@ contract RegBase is RegBaseAbstract
 // Constants
 //
 
-    bytes32 constant public VERSION = "RegBase v0.3.0";
+    bytes32 constant public VERSION = "RegBase v0.3.1";
 
 //
 // State Variables
@@ -122,6 +119,7 @@ contract RegBase is RegBaseAbstract
     /// `_owner` else `_creator` else msg.sender
     function RegBase(address _creator, bytes32 _regName, address _owner)
     {
+        require(_regName != 0x0);
         regName = _regName;
         owner = _owner != 0x0 ? _owner : 
                 _creator != 0x0 ? _creator : msg.sender;

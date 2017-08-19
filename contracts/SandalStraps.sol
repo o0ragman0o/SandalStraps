@@ -1,8 +1,8 @@
 /******************************************************************************\
 
 file:   SandalStraps.sol
-ver:    0.3.0
-updated:1-Aug-2017
+ver:    0.3.1
+updated:19-Aug-2017
 author: Darryl Morris (o0ragman0o)
 email:  o0ragman0o AT gmail.com
 
@@ -15,18 +15,15 @@ See MIT Licence for further details.
 <https://opensource.org/licenses/MIT>.
 
 Release Notes:
-* Solidity 0.4.13
-* using RegBase 0.3.0
-* Underscorded event params
-* double underscored __initFuse
+* local directory imports
+* removed regName requirment in factory as RegBase constructor now requires regName
 
 \******************************************************************************/
 
-import "https://github.com/o0ragman0o/SandalStraps/contracts/Factory.sol";
-import "https://github.com/o0ragman0o/SandalStraps/contracts/Registrar.sol";
-import "https://github.com/o0ragman0o/SandalStraps/contracts/Value.sol";
-
 pragma solidity ^0.4.13;
+
+import "./Registrar.sol";
+import "./Value.sol";
 
 contract SandalStraps is RegBase
 {
@@ -34,7 +31,7 @@ contract SandalStraps is RegBase
 // Constants
 //
 
-    bytes32 constant public VERSION = "SandalStraps v0.3.0";
+    bytes32 constant public VERSION = "SandalStraps v0.3.1";
 
 //
 // State Variables
@@ -43,6 +40,7 @@ contract SandalStraps is RegBase
     // Value to track contract initialization state 
     uint8 public __initFuse = 1;
     
+// TODO predeploy RegistrarFactory and hook to it.
     // An embedded Registrar factory to bootstrap the contract 
     RegistrarFactory public bootstrap;
     
@@ -70,7 +68,7 @@ contract SandalStraps is RegBase
     function SandalStraps(address _creator, bytes32 _regName, address _owner)
         RegBase(_creator, _regName, _owner)
     {
-        bootstrap = new RegistrarFactory(owner, "", 0x0);
+        bootstrap = new RegistrarFactory(owner, "bootstrap", 0x0);
     }
 
 /* Public Constant functions */
@@ -153,7 +151,7 @@ contract SandalStraps is RegBase
         onlyOwner
     {
         require(1 == __initFuse);
-        metaRegistrar = Registrar(bootstrap.createNew("metaRegistrar", 0));
+        metaRegistrar = Registrar(bootstrap.createNew("metaregistrar", 0));
         __initFuse++;
     }
 
@@ -165,7 +163,8 @@ contract SandalStraps is RegBase
         onlyOwner
     {
         require(2 == __initFuse);
-        metaRegistrar.add(this);
+        address self = this;
+        metaRegistrar.add(self);
         metaRegistrar.add(metaRegistrar);
         metaRegistrar.add(bootstrap.createNew("factories", 0));
         __initFuse++;
@@ -180,7 +179,7 @@ contract SandalStraps is RegBase
     {
         require(3 == __initFuse);
         Registrar(metaRegistrar.namedAddress("factories")).add(bootstrap);
-        metaRegistrar.add(bootstrap.createNew("Registrar", 0));
+        metaRegistrar.add(bootstrap.createNew("registrar", 0));
         delete __initFuse;
     }
     
@@ -215,7 +214,7 @@ contract SandalStraps is RegBase
 
         // Create registrar of same factory name if one doesn't exist
         if (0 == metaRegistrar.namedIndex(fRegName)) {
-            factory = Factory(getAddressByName("factories", "Registrar"));
+            factory = Factory(getAddressByName("factories", "registrar"));
             metaRegistrar.add(factory.createNew(fRegName, address(0)));
         }
         
@@ -234,7 +233,7 @@ contract SandalStraps is RegBase
         uint256 factoryFee = factory.value();
         
         // Get Straps fee if a value is registered. Straps owner gets free.
-        address feeAddr = metaRegistrar.namedAddress("newFromFactoryFee");
+        address feeAddr = metaRegistrar.namedAddress("newfromfactoryfee");
         uint256 newFromFactoryFee = (0x0 == feeAddr || msg.sender == owner) ?
             0 : Value(feeAddr).value();
         
@@ -265,7 +264,7 @@ contract SandalStraps is RegBase
         uint256 factoryFee = factory.value();
         
         // Get Straps fee if a value is registered. Straps owner gets free.
-        address feeAddr = metaRegistrar.namedAddress("newFromFactoryFee");
+        address feeAddr = metaRegistrar.namedAddress("newfromfactoryfee");
         uint256 newFromFactoryFee = (0x0 == feeAddr || msg.sender == owner) ?
             0 : Value(feeAddr).value();
         
@@ -302,7 +301,7 @@ contract SandalStraps is RegBase
         public
         returns (bool)
     {
-        address feeCollector = metaRegistrar.namedAddress("feeCollector");
+        address feeCollector = metaRegistrar.namedAddress("feecollector");
         if (0x0 == feeCollector) feeCollector = owner;
         feeCollector.transfer(_value);
         return true;
@@ -377,7 +376,7 @@ contract SandalStrapsFactory is Factory
     bytes32 constant public regName = "sandalstraps";
 
     /// @return version string
-    bytes32 constant public VERSION = "SandalStrapsFactory v0.3.0";
+    bytes32 constant public VERSION = "SandalStrapsFactory v0.3.1";
 
 //
 // Functions
@@ -408,7 +407,6 @@ contract SandalStrapsFactory is Factory
         feePaid
         returns (address kAddr_)
     {
-        require(_regName != 0x0);
         kAddr_ = address(new SandalStraps(msg.sender, _regName, _owner));
         Created(msg.sender, _regName, kAddr_);
     }

@@ -1,8 +1,8 @@
 /******************************************************************************\
 
 file:   Factory.sol
-ver:    0.3.0
-updated:2-Aug-2017
+ver:    0.3.1
+updated:19-Aug-2017
 author: Darryl Morris (o0ragman0o)
 email:  o0ragman0o AT gmail.com
 
@@ -29,16 +29,14 @@ See MIT Licence for further details.
 
 Release Notes
 -------------
-* using v0.3.0 RegBase
-* Indexed and underscored event parameter names to differentiate from
-  identifiers of same name.
-* Removed Withdrawable from inheretance
+* local directory imports
+* removed regName requirment in factory as RegBase constructor now requires regName
 
 \******************************************************************************/
 
-pragma solidity ^0.4.11;
+pragma solidity ^0.4.13;
 
-import "https://github.com/o0ragman0o/SandalStraps/contracts/RegBase.sol";
+import "./RegBase.sol";
 
 contract Factory is RegBase
 {
