@@ -250,7 +250,7 @@ contract SandalStraps is RegBase
     /// @return bool value indicating success
     function newFromFactory(bytes32 _factory, bytes32 _regName)
         payable
-        returns (bool)
+        returns (address kAddr_)
     {
         // Get chosen factory and ensure it exists
         Factory factory = Factory(getAddressByName("factories", _factory));
@@ -274,11 +274,11 @@ contract SandalStraps is RegBase
         require(msg.value == factoryFee + newFromFactoryFee);
         
         // Create and register product contract
-        address kAddr = factory.createNew
+        kAddr_ = factory.createNew
                             .value(factoryFee)(_regName, msg.sender);
-        require(registrar.add(kAddr));
-        ProductCreated(_regName, kAddr);
-        return true;
+        require(registrar.add(kAddr_));
+        ProductCreated(_regName, kAddr_);
+        return;
     }
     
     /// @notice Register contract at address `_kAddr` into registrar `_registrar`
