@@ -238,7 +238,7 @@ contract RegistrarFactory is Factory
     /// @dev On 0x0 value for _owner or _creator, ownership precedence is:
     /// `_owner` else `_creator` else msg.sender
     function RegistrarFactory(address _creator, bytes32 _regName, address _owner)
-        Factory(_creator, _regName, _owner)
+        Factory(_creator, regName, _owner)
     {
         // nothing to construct
     }

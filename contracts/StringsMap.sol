@@ -123,7 +123,7 @@ contract StringsMapFactory is Factory
     /// `_owner` else `_creator` else msg.sender
     function StringsMapFactory(
             address _creator, bytes32 _regName, address _owner)
-        Factory(_creator, _regName, _owner)
+        Factory(_creator, regName, _owner)
     {
         // nothing to construct
     }
