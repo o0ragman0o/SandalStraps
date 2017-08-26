@@ -1,8 +1,8 @@
 /******************************************************************************\
 
 file:   Registrar.sol
-ver:    0.3.1
-updated:19-Aug-2017
+ver:    0.3.2
+updated:26-Aug-2017
 author: Darryl Morris (o0ragman0o)
 email:  o0ragman0o AT gmail.com
 
@@ -30,8 +30,7 @@ See MIT Licence for further details.
 
 Release Notes
 -------------
-* local directory imports
-* removed regName requirment in factory as RegBase constructor now requires regName
+* Using RegBase 0.3.2
 
 \******************************************************************************/
 
@@ -47,7 +46,7 @@ contract Registrar is RegBase
 //
 
     /// @return The contract version number
-    bytes32 constant public VERSION = "Registrar v0.3.1";
+    bytes32 constant public VERSION = "Registrar v0.3.2";
 
 //
 // State Variables
@@ -124,6 +123,7 @@ contract Registrar is RegBase
         kAddr_ = indexedAddress[namedIndex[_regName]];
         require(kAddr_ != 0x0);
     }
+    
     /// @dev Return the registered address named `_regName`
     /// @param _regName A registered name
     /// @param addr_ The registered address
@@ -224,7 +224,7 @@ contract RegistrarFactory is Factory
 //
 
     bytes32 constant public regName = "registrar";
-    bytes32 constant public VERSION = "RegistrarFactory v0.3.1";
+    bytes32 constant public VERSION = "RegistrarFactory v0.3.2";
 
 //
 // Functions

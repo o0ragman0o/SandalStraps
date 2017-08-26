@@ -1,8 +1,8 @@
 /******************************************************************************\
 
 file:   SandalStraps.sol
-ver:    0.3.1
-updated:19-Aug-2017
+ver:    0.3.2
+updated:26-Aug-2017
 author: Darryl Morris (o0ragman0o)
 email:  o0ragman0o AT gmail.com
 
@@ -15,8 +15,7 @@ See MIT Licence for further details.
 <https://opensource.org/licenses/MIT>.
 
 Release Notes:
-* local directory imports
-* removed regName requirment in factory as RegBase constructor now requires regName
+* Using RegBase 0.3.2
 
 \******************************************************************************/
 
@@ -31,7 +30,7 @@ contract SandalStraps is RegBase
 // Constants
 //
 
-    bytes32 constant public VERSION = "SandalStraps v0.3.1";
+    bytes32 constant public VERSION = "SandalStraps v0.3.2";
 
 //
 // State Variables
@@ -376,7 +375,7 @@ contract SandalStrapsFactory is Factory
     bytes32 constant public regName = "sandalstraps";
 
     /// @return version string
-    bytes32 constant public VERSION = "SandalStrapsFactory v0.3.1";
+    bytes32 constant public VERSION = "SandalStrapsFactory v0.3.2";
 
 //
 // Functions

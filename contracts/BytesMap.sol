@@ -1,8 +1,8 @@
 /******************************************************************************\
 
-file:   BytessMap.sol
-ver:    0.3.1
-updated:19-Aug-2017
+file:   BytesMap.sol
+ver:    0.3.2
+updated:26-Aug-2017
 author: Darryl Morris (o0ragman0o)
 email:  o0ragman0o AT gmail.com
 
@@ -20,8 +20,7 @@ See MIT Licence for further details.
 
 Release Notes
 -------------
-* local directory imports
-* removed regName requirment in factory as RegBase constructor now requires regName
+* Using RegBase 0.3.2
 
 
 \******************************************************************************/
@@ -36,7 +35,7 @@ contract BytesMap is RegBase
 // Constants
 //
 
-    bytes32 constant public VERSION = "BytesMap v0.3.1";
+    bytes32 constant public VERSION = "BytesMap v0.3.2";
 
 //
 // State Variables

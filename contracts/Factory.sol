@@ -1,8 +1,8 @@
 /******************************************************************************\
 
 file:   Factory.sol
-ver:    0.3.1
-updated:19-Aug-2017
+ver:    0.3.2
+updated:26-Aug-2017
 author: Darryl Morris (o0ragman0o)
 email:  o0ragman0o AT gmail.com
 
@@ -29,6 +29,7 @@ See MIT Licence for further details.
 
 Release Notes
 -------------
+* Using Regbase 0.3.2
 * local directory imports
 * removed regName requirment in factory as RegBase constructor now requires regName
 

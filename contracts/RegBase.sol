@@ -1,8 +1,8 @@
 /******************************************************************************\
 
 file:   RegBase.sol
-ver:    0.3.1
-updated:19-Aug-2017
+ver:    0.3.2
+updated:26-Aug-2017
 author: Darryl Morris (o0ragman0o)
 email:  o0ragman0o AT gmail.com
 
@@ -22,7 +22,9 @@ See MIT Licence for further details.
 <https://opensource.org/licenses/MIT>.
 
 Release notes:
-* Constructor now requires non-empty `_regName`
+* Using Owned 0.2.0 API
+* Added `receiveOwnerShip(address _kAddr) public returns (bool)`
+* Added `event ReceivedOwnership(address indexed _kAddr);
 \******************************************************************************/
 
 pragma solidity ^0.4.13;
@@ -57,6 +59,9 @@ contract RegBaseAbstract
     /// @dev Triggered on change of owner address
     event ChangedOwner(address indexed _oldOwner, address indexed _newOwner);
 
+    /// @dev Triggered when the contract accepts ownership of another contract.
+    event ReceivedOwnership(address indexed _kAddr);
+
     /// @dev Triggered on change of resource
     event ChangedResource(bytes32 indexed _resource);
 
@@ -74,6 +79,12 @@ contract RegBaseAbstract
     /// @notice Finalise change of ownership to newOwner
     function acceptOwnership() public returns (bool);
 
+    /// @dev optional
+    /// @notice This contract will call `_kAddr`.acceptOwnership()
+    /// @param _kAddr A thirdparty contract which this contract can accept
+    /// ownership
+    function receiveOwnership(address _kAddr) public returns (bool);
+
     /// @notice Change the resource to `_resource`
     /// @param _resource A key or short text to be stored as the resource.
     function changeResource(bytes32 _resource) public returns (bool);
@@ -86,7 +97,7 @@ contract RegBase is RegBaseAbstract
 // Constants
 //
 
-    bytes32 constant public VERSION = "RegBase v0.3.1";
+    bytes32 constant public VERSION = "RegBase v0.3.2";
 
 //
 // State Variables
@@ -156,6 +167,18 @@ contract RegBase is RegBaseAbstract
         delete newOwner;
         return true;
     }
+
+    /// @notice This contract will call `_kAddr`.acceptOwnership()
+    /// @param _kAddr A thirdparty contract which this contract can accept
+    /// ownership
+	function receiveOwnership(address _kAddr)
+		public
+		returns (bool)
+	{
+		require(RegBase(_kAddr).acceptOwnership());
+	    ReceivedOwnership(_kAddr);
+	    return true;
+	}
 
     /// @notice Change the resource to `_resource`
     /// @param _resource A key or short text to be stored as the resource.
