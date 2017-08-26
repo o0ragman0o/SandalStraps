@@ -23,8 +23,8 @@ See MIT Licence for further details.
 
 Release notes:
 * Using Owned 0.2.0 API
-* Added `receiveOwnerShip(address _kAddr) public returns (bool)`
-* Added `event ReceivedOwnership(address indexed _kAddr);
+* removed `receiveOwnerShip(address _kAddr) public returns (bool)`
+* removed `event ReceivedOwnership(address indexed _kAddr);
 \******************************************************************************/
 
 pragma solidity ^0.4.13;
@@ -78,12 +78,6 @@ contract RegBaseAbstract
 
     /// @notice Finalise change of ownership to newOwner
     function acceptOwnership() public returns (bool);
-
-    /// @dev optional
-    /// @notice This contract will call `_kAddr`.acceptOwnership()
-    /// @param _kAddr A thirdparty contract which this contract can accept
-    /// ownership
-    function receiveOwnership(address _kAddr) public returns (bool);
 
     /// @notice Change the resource to `_resource`
     /// @param _resource A key or short text to be stored as the resource.
@@ -167,18 +161,6 @@ contract RegBase is RegBaseAbstract
         delete newOwner;
         return true;
     }
-
-    /// @notice This contract will call `_kAddr`.acceptOwnership()
-    /// @param _kAddr A thirdparty contract which this contract can accept
-    /// ownership
-	function receiveOwnership(address _kAddr)
-		public
-		returns (bool)
-	{
-		require(RegBase(_kAddr).acceptOwnership());
-	    ReceivedOwnership(_kAddr);
-	    return true;
-	}
 
     /// @notice Change the resource to `_resource`
     /// @param _resource A key or short text to be stored as the resource.
