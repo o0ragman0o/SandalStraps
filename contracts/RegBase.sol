@@ -1,8 +1,8 @@
 /******************************************************************************\
 
 file:   RegBase.sol
-ver:    0.3.2
-updated:26-Aug-2017
+ver:    0.3.3
+updated:12-Sep-2017
 author: Darryl Morris (o0ragman0o)
 email:  o0ragman0o AT gmail.com
 
@@ -22,9 +22,7 @@ See MIT Licence for further details.
 <https://opensource.org/licenses/MIT>.
 
 Release notes:
-* Using Owned 0.2.0 API
-* removed `receiveOwnerShip(address _kAddr) public returns (bool)`
-* removed `event ReceivedOwnership(address indexed _kAddr);
+* Framworking changing to Factory v0.3.3 usage
 \******************************************************************************/
 
 pragma solidity ^0.4.13;
@@ -91,7 +89,7 @@ contract RegBase is RegBaseAbstract
 // Constants
 //
 
-    bytes32 constant public VERSION = "RegBase v0.3.2";
+    bytes32 constant public VERSION = "RegBase v0.3.3";
 
 //
 // State Variables

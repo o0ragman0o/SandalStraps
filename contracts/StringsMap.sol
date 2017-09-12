@@ -1,8 +1,8 @@
 /******************************************************************************\
 
 file:   StringsMap.sol
-ver:    0.3.2
-updated:26-Aug-2017
+ver:    0.3.3
+updated:12-Sep-2017
 author: Darryl Morris (o0ragman0o)
 email:  o0ragman0o AT gmail.com
 
@@ -20,7 +20,8 @@ See MIT Licence for further details.
 
 Release notes
 -------------
-* Using RegBase 0.3.2
+* Using Factory 0.3.3 for `withdrawAll()` instead of `withdraw(<value>)`
+
 \******************************************************************************/
 
 pragma solidity ^0.4.13;
@@ -33,7 +34,7 @@ contract StringsMap is RegBase
 // Constants
 //
 
-    bytes32 constant public VERSION = "StringsMap v0.3.2";
+    bytes32 constant public VERSION = "StringsMap v0.3.3";
 
 //
 // State Variables
@@ -107,7 +108,7 @@ contract StringsMapFactory is Factory
     bytes32 constant public regName = "stringsmap";
     
     /// @return version string
-    bytes32 constant public VERSION = "StringsMapFactory v0.3.2";
+    bytes32 constant public VERSION = "StringsMapFactory v0.3.3";
 
 //
 // Functions

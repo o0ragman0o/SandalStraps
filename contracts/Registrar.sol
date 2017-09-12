@@ -1,8 +1,8 @@
 /******************************************************************************\
 
 file:   Registrar.sol
-ver:    0.3.2
-updated:26-Aug-2017
+ver:    0.3.3
+updated:12-Sep-2017
 author: Darryl Morris (o0ragman0o)
 email:  o0ragman0o AT gmail.com
 
@@ -30,7 +30,8 @@ See MIT Licence for further details.
 
 Release Notes
 -------------
-* Using RegBase 0.3.2
+* Using Factory 0.3.3 for `withdrawAll()` instead of `withdraw(<value>)`
+
 
 \******************************************************************************/
 
@@ -46,7 +47,7 @@ contract Registrar is RegBase
 //
 
     /// @return The contract version number
-    bytes32 constant public VERSION = "Registrar v0.3.2";
+    bytes32 constant public VERSION = "Registrar v0.3.3";
 
 //
 // State Variables
@@ -224,7 +225,7 @@ contract RegistrarFactory is Factory
 //
 
     bytes32 constant public regName = "registrar";
-    bytes32 constant public VERSION = "RegistrarFactory v0.3.2";
+    bytes32 constant public VERSION = "RegistrarFactory v0.3.3";
 
 //
 // Functions

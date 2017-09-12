@@ -1,8 +1,8 @@
 /******************************************************************************\
 
 file:   SandalStraps.sol
-ver:    0.3.2
-updated:26-Aug-2017
+ver:    0.3.3
+updated:12-Sep-2017
 author: Darryl Morris (o0ragman0o)
 email:  o0ragman0o AT gmail.com
 
@@ -15,7 +15,7 @@ See MIT Licence for further details.
 <https://opensource.org/licenses/MIT>.
 
 Release Notes:
-* Using RegBase 0.3.2
+* Using Factory 0.3.3 for `withdrawAll()` instead of `withdraw(<value>)`
 
 \******************************************************************************/
 
@@ -30,7 +30,7 @@ contract SandalStraps is RegBase
 // Constants
 //
 
-    bytes32 constant public VERSION = "SandalStraps v0.3.2";
+    bytes32 constant public VERSION = "SandalStraps v0.3.3";
 
 //
 // State Variables
@@ -50,8 +50,14 @@ contract SandalStraps is RegBase
 // Events
 //
 
+    // Triggered when a factory is registered
     event FactoryAdded(bytes32 indexed _regName, address indexed _addr);
+    
+    // Triggered when a factory product is created
     event ProductCreated(bytes32 indexed _regName, address indexed _addr);
+    
+    // Triggered when SandalStraps accepts ownership of a contract
+    event ReceivedOwnership(address indexed _kAddr);
     
 //
 // Functions
@@ -67,6 +73,7 @@ contract SandalStraps is RegBase
     function SandalStraps(address _creator, bytes32 _regName, address _owner)
         RegBase(_creator, _regName, _owner)
     {
+        // TODO use chain dependant constant addresses for predeployed bootstrap
         bootstrap = new RegistrarFactory(owner, "bootstrap", 0x0);
     }
 
@@ -268,7 +275,7 @@ contract SandalStraps is RegBase
             0 : Value(feeAddr).value();
         
         // Check correct fee has been sent
-        // Not that factory owner must also pay fee, but can then withdraw it
+        // Note that factory owner must also pay fee, but can then withdraw it
         // from the factory
         require(msg.value == factoryFee + newFromFactoryFee);
         
@@ -296,13 +303,13 @@ contract SandalStraps is RegBase
     
     /// @notice Withdraw the contract balance to the feeCollector address
     /// @return bool value indicating success
-    function withdraw(uint _value)
+    function withdrawAll()
         public
         returns (bool)
     {
         address feeCollector = metaRegistrar.namedAddress("feecollector");
         if (0x0 == feeCollector) feeCollector = owner;
-        feeCollector.transfer(_value);
+        feeCollector.transfer(this.balance);
         return true;
     }
     
@@ -335,6 +342,18 @@ contract SandalStraps is RegBase
         returns (bool)
     {
         require(RegBase(_kAddr).changeOwner(_owner));
+        return true;
+    }
+    
+    /// @notice Receive ownership of a contract at `_kAddr`
+    /// @param _kAddr The address of a contract transferring ownership
+    /// @return bool value indicating success
+    function receiveOwnership(address _kAddr)
+        public
+        returns (bool)
+    {
+        require(RegBase(_kAddr).acceptOwnership());
+        ReceivedOwnership(_kAddr);
         return true;
     }
 
@@ -375,7 +394,7 @@ contract SandalStrapsFactory is Factory
     bytes32 constant public regName = "sandalstraps";
 
     /// @return version string
-    bytes32 constant public VERSION = "SandalStrapsFactory v0.3.2";
+    bytes32 constant public VERSION = "SandalStrapsFactory v0.3.3";
 
 //
 // Functions
