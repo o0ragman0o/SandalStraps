@@ -1,8 +1,8 @@
 /******************************************************************************\
 
 file:   SandalStraps.sol
-ver:    0.3.3
-updated:12-Sep-2017
+ver:    0.4.0
+updated:8-Oct-2017
 author: Darryl Morris (o0ragman0o)
 email:  o0ragman0o AT gmail.com
 
@@ -15,22 +15,41 @@ See MIT Licence for further details.
 <https://opensource.org/licenses/MIT>.
 
 Release Notes:
-* Using Factory 0.3.3 for `withdrawAll()` instead of `withdraw(<value>)`
+* Completely breaking changes
+* Added minimum Withdrawable API compliance
+* Change factoryFee to productPrice
+* Changed newFromFactoryFee to commission
+* Changed "newfromfactoryfee" to "sswallet"
+* Hardcoded predeployed bootstrap address
+* removed __init3()
+* Renamed registrar proxy getters according to registrar getter name changes
+* Removed `event RegistrarChange(bytes32 indexed _registrar, address indexed _kAddr);`
+* Added `function removeFrom(bytes32 _registrar, address _kAddr)`
+* Added `event RegistrarAdd(bytes32 indexed _registrar, address indexed _kAddr);`
+* Added `event RegistrarRemove(bytes32 indexed _registrar, address indexed _kAddr);`
+* Added `reservedNames` mapping for to allow only owner to add reserved name contracts
+* Added `function changeReservedsName(bytes32 _regName, bool _reserved) returns (bool);
+
 
 \******************************************************************************/
 
 pragma solidity ^0.4.13;
 
+import "https://github.com/o0ragman0o/Withdrawable/contracts/Withdrawable.sol";
+import "https://github.com/o0ragman0o/ReentryProtected/ReentryProtected.sol";
 import "./Registrar.sol";
 import "./Value.sol";
 
-contract SandalStraps is RegBase
+contract SandalStraps is ReentryProtected, RegBase, WithdrawableMinItfc
 {
 //
 // Constants
 //
 
-    bytes32 constant public VERSION = "SandalStraps v0.3.3";
+    bytes32 constant public VERSION = "SandalStraps v0.4.0";
+
+    // Pre-deployed registrar factory address
+    address constant BOOTSTRAP = 0xDFd6dCCF429Fe7d4e8bba3f9c29c2C7CbA4f52EF;
 
 //
 // State Variables
@@ -39,28 +58,37 @@ contract SandalStraps is RegBase
     // Value to track contract initialization state 
     uint8 public __initFuse = 1;
     
-// TODO predeploy RegistrarFactory and hook to it.
-    // An embedded Registrar factory to bootstrap the contract 
-    RegistrarFactory public bootstrap;
+    // Address of creator
+    address public creator;
+
+    // RegistrarFactory bootstrap;
+    RegistrarFactory public bootstrap = RegistrarFactory(BOOTSTRAP);
     
     // The root level registrar
     Registrar public metaRegistrar;
+    
+    // A mapping of regNames that can only be added by the owner
+    mapping (bytes32 => bool) public reservedNames;
 
 //
 // Events
 //
 
-    // Triggered when a factory is registered
-    event FactoryAdded(bytes32 indexed _regName, address indexed _addr);
+    // Logged when a factory product is created
+    event ProductCreated(address indexed _by,
+        bytes32 indexed _regName, address indexed _kAddr);
     
-    // Triggered when a factory product is created
-    event ProductCreated(bytes32 indexed _regName, address indexed _addr);
-    
-    // Triggered when SandalStraps accepts ownership of a contract
+    // Logged when SandalStraps accepts ownership of a contract
     event ReceivedOwnership(address indexed _kAddr);
-    
+
+    // Logged when a registrar entry is changed
+    event RegistrarAdd(bytes32 indexed _registrar, address indexed _kAddr);
+
+    // Logged when a registrar entry is removed
+    event RegistrarRemove(bytes32 indexed _registrar, address indexed _kAddr);
+
 //
-// Functions
+// Functions - Constructor and Default
 //
 
     /// @param _creator The calling address passed through by a factory,
@@ -71,122 +99,197 @@ contract SandalStraps is RegBase
     /// @dev On 0x0 value for _owner or _creator, ownership precedence is:
     /// `_owner` else `_creator` else msg.sender
     function SandalStraps(address _creator, bytes32 _regName, address _owner)
+        public
         RegBase(_creator, _regName, _owner)
     {
-        // TODO use chain dependant constant addresses for predeployed bootstrap
-        bootstrap = new RegistrarFactory(owner, "bootstrap", 0x0);
+    	creator = _creator;
+        metaRegistrar = Registrar(bootstrap.createNew("metaregistrar", this));
+        ProductCreated(msg.sender, "metaregistrar", address(metaRegistrar));
+        reservedNames["metaregistrar"] = true;
+        reservedNames["factories"] = true;
+        reservedNames["registrar"] = true;
+        reservedNames["sswallet"] = true;
+        reservedNames["sscommision"] = true;
+        reservedNames["ssfactoryfee"] = true;
     }
 
+    /// @dev Accepts funds to the default function
+    function ()
+        public
+        payable
+    {
+        Deposit(msg.sender, msg.value);
+    }
+    
 /* Public Constant functions */
 
-    // ENS resolver for registrars
+    /// @dev ENS resolver for metaRegistrar registered contracts
+    /// @param _regName a contract's registrar name
     function addr(bytes32 _regName)
         public
         constant
         returns (address kAddr_)
     {
-        kAddr_ = metaRegistrar.namedAddress(_regName);
+        kAddr_ = metaRegistrar.addr(_regName);
         require(kAddr_ != 0x0);
     }
 
-    // @param _registrar The name of a registered registrar
-    // @param _regName The name of a registed contract to query
-    // @return kAddr_ The address of the contract `_regName` registered in
-    // `_registrar`
-    function getAddressByName(bytes32 _registrar, bytes32 _regName)
-        public constant
+    /// @param _registrar The name of a registered registrar
+    /// @param _regName The name of a registed contract to query
+    /// @return kAddr_ The address of the contract `_regName` registered in
+    /// `_registrar`
+    function addressByNameFrom(bytes32 _registrar, bytes32 _regName)
+        public
+        constant
         returns (address kAddr_)
     {
-        kAddr_ = Registrar(metaRegistrar.namedAddress(_registrar))
-            .namedAddress(_regName);
+        kAddr_ = Registrar(metaRegistrar.addressByName(_registrar))
+            .addressByName(_regName);
     }
     
-    // @param _registrar The name of a registered registrar
-    // @param _regName The name of a registed contract to query
-    // @return idx_ The registration index of the contract `_regName` registered
-    // in `_registrar`
-    function getIndexByName(bytes32 _registrar, bytes32 _regName)
-        public constant
+    /// @param _registrar The name of a registered registrar
+    /// @param _regName The name of a registed contract to query
+    /// @return idx_ The registration index of the contract `_regName` registered
+    /// in `_registrar`
+    function indexByNameFrom(bytes32 _registrar, bytes32 _regName)
+        public
+        constant
         returns (uint idx_)
     {
-        idx_ = Registrar(metaRegistrar.namedAddress(_registrar))
-            .namedIndex(_regName);
+        idx_ = Registrar(metaRegistrar.addressByName(_registrar))
+            .indexByName(_regName);
     }
 
-    // @param _registrar The name of a registered registrar
-    // @param _kAddr The address of a contract registered in `_registrar`
-    // @return idx_ The registration index of the contract `_kAddr` registered
-    // in `_registrar`
-    function getIndexByAddress(bytes32 _registrar, address _kAddr)
-        public constant
+    /// @param _registrar The name of a registered registrar
+    /// @param _kAddr The address of a contract registered in `_registrar`
+    /// @return idx_ The registration index of the contract `_kAddr` registered
+    /// in `_registrar`
+    function indexByAddressFrom(bytes32 _registrar, address _kAddr)
+        public
+        constant
         returns (uint idx_)
     {
-        idx_ = Registrar(metaRegistrar.namedAddress(_registrar))
-            .addressIndex(_kAddr);
+        idx_ = Registrar(metaRegistrar.addressByName(_registrar))
+            .indexByAddress(_kAddr);
     }
 
-    // @param _registrar The name of a registered registrar
-    // @param _kAddr The address of a contract registered in `_registrar`
-    // @return regName_ The name of the contract registered in `_registrar`
-    function getNameByAddress(bytes32 _registrar, address _kAddr)
-        public constant
+    /// @param _registrar The name of a registered registrar
+    /// @param _kAddr The address of a contract registered in `_registrar`
+    /// @return regName_ The name of the contract registered in `_registrar`
+    function nameByAddressFrom(bytes32 _registrar, address _kAddr)
+        public
+        constant
         returns (bytes32 regName_)
     {
-        regName_ = getNameByIndex(
-            _registrar, getIndexByAddress(_registrar, _kAddr));
+        regName_ = nameByIndexFrom(
+            _registrar, indexByAddressFrom(_registrar, _kAddr));
     }
 
-    // @param _registrar The name of a registered registrar
-    // @param _idx The registration index of a contract
-    // @return regName_ The name of the contract registered in `_registrar`
-    function getNameByIndex(bytes32 _registrar, uint _idx)
-        public constant
+    /// @param _registrar The name of a registered registrar
+    /// @param _idx The registration index of a contract
+    /// @return regName_ The name of the contract registered in `_registrar`
+    function nameByIndexFrom(bytes32 _registrar, uint _idx)
+        public
+        constant
         returns (bytes32 regName_)
     {
-        regName_ = Registrar(metaRegistrar.namedAddress(_registrar))
-            .indexName(_idx);
+        regName_ = Registrar(metaRegistrar.addressByName(_registrar))
+            .nameByIndex(_idx);
+    }
+    
+    /// @return fee_ The fee in wei required to register a factory contract
+    function getAddFactoryFee()
+        public
+        constant
+        returns (uint fee_)
+    {
+        // Get fee for adding a factory if a fee value exists
+        address feeAddr = metaRegistrar.addressByName("ssfactoryfee");
+        fee_ = 0x0 == feeAddr ? 0 : Value(feeAddr).value();
+    }
+    
+    /// @returns div_ The commision divisor if set
+    function getCommissionDivisor()
+        public
+        constant
+        returns (uint div_)
+    {
+        address commissionAddr = metaRegistrar.addressByName("sscommission");
+        div_ = (0x0 == commissionAddr) ? 0 : Value(commissionAddr).value();
+    }
+    
+    /// @param _factory The regName of a product factory
+    /// @return price_ The price in wei required to create a `_factory` product
+    function getProductPrice(bytes32 _factory)
+    	public
+        constant
+        returns (uint price_)
+    {
+        // Get fee from chosen factory        
+        price_ = Factory(addressByNameFrom("factories", _factory)).value();
+
+        // Get Straps fee if a value is registered. Straps owner gets free.
+        address commissionAddr = metaRegistrar.addressByName("sscommission");
+        uint divisor = (0x0 == commissionAddr) ? 0 : 
+                Value(commissionAddr).value();
+
+        // Need to protect against divide by 0 on unset commision divisor value
+        price_ = (0 == divisor) ? price_ : 
+                price_ + price_ / divisor;
     }
     
 
 /* Public non-constant Functions */ 
 
-    /// @notice Creates root registrar 'metaRegistrar'
-    /// @dev must be called first
+    /// @dev Creates and registers 'factories' and 'registrar' registrars
     function _init1()
         public
         onlyOwner
+        noReentry
+        returns (bool)
     {
         require(1 == __initFuse);
-        metaRegistrar = Registrar(bootstrap.createNew("metaregistrar", 0));
-        __initFuse++;
-    }
+        
+        // Create and add 'factories' registrar to metaregistrar
+        address factoriesReg = bootstrap.createNew("factories", this);
+        ProductCreated(msg.sender, "factories", factoriesReg);
+        metaRegistrar.add(factoriesReg);
+        RegistrarAdd("metaregistrar", factoriesReg);
+        
+        // Create and register the 'registrar' registrar
+        address registrarReg = bootstrap.createNew("registrar", this);
+        ProductCreated(msg.sender, "registrar", registrarReg);
+        metaRegistrar.add(registrarReg);
+        RegistrarAdd("metaregistrar", registrarReg);
 
-    /// @notice Self registers this SandalStraps instant, metaRegistrar then 
-    /// creates the 'factories' registrar
-    /// @dev must be called second
+        __initFuse++;
+        return true;
+    }
+    
+    /// @dev Registers own and metaregistrar addresses in metaRegistrar.
+    /// Registers bootstrap factory address in factories
     function _init2()
         public
         onlyOwner
+        noReentry
+        returns (bool)
     {
         require(2 == __initFuse);
-        address self = this;
-        metaRegistrar.add(self);
+        
+        // Add this to metaregistrar
+        metaRegistrar.add(this);
+        RegistrarAdd("metaregistrar", this);
+        
+        // Add 'metaregistrar' to metaregistrar
         metaRegistrar.add(metaRegistrar);
-        metaRegistrar.add(bootstrap.createNew("factories", 0));
-        __initFuse++;
-    }
-    
-    /// @notice Registers the 'bootstap' registrar factory in the 'factories'
-    /// then creates and registers the 'Registrars' registrar.
-    /// @dev must be called third
-    function _init3()
-        public
-        onlyOwner
-    {
-        require(3 == __initFuse);
-        Registrar(metaRegistrar.namedAddress("factories")).add(bootstrap);
-        metaRegistrar.add(bootstrap.createNew("registrar", 0));
+        RegistrarAdd("metaregistrar", metaRegistrar);
+        
+        // Register the bootstrap registrar factory in 'factories' registrar
+        Registrar(metaRegistrar.addressByName("factories")).add(BOOTSTRAP);
+        RegistrarAdd("factories", BOOTSTRAP);
+        
         delete __initFuse;
+        return true;
     }
     
     /// @notice Register a Sandalstraps compliant fractory at address `_kAddr`
@@ -196,108 +299,152 @@ contract SandalStraps is RegBase
     /// the factory are registered
     /// @return bool value indicating success
     function addFactory(address _kAddr)
+        public
         payable
+        preventReentry
         returns (bool)
     {
-        Factory factory;
-        Registrar registrar;
+        if (msg.value > 0) { Deposit(msg.sender, msg.value); }
 
-        // Get the factory's `regName` and validate it
-        bytes32 fRegName = RegBase(_kAddr).regName();
-        require(fRegName != 0x0);
+        // Get the factories registrar
+        address factories = metaRegistrar.addressByName("factories");
         
-        // Get fee for adding a factory if a fee value exists
-        address feeAddr = metaRegistrar.namedAddress("addFactoryFee");
-        uint256 chargeFee = msg.sender == owner ? 0 :
-                    0x0 == feeAddr? 0 : Value(feeAddr).value();
+        // Get the registrars registrar
+        Registrar registrars = Registrar(metaRegistrar.addressByName("registrar"));
+        
+        // Get the registrar factory
+        address regFactory = addressByNameFrom("factories", "registrar");
+        
+        // Get registrar factory price
+        uint price = Value(regFactory).value();
+        require(msg.value == fee + price);
 
-        // Check correct fee has been sent
-        require(chargeFee == msg.value);
+        // Get factory registration fee
+        address feeValue = metaRegistrar.addressByName("ssfactoryfee");
+        uint fee = feeValue == 0x0 ? 0 : Value(feeValue).value();
+        
+        // Get the added factory's `regName` and validate it
+        bytes32 factoryName = RegBase(_kAddr).regName();
+        require(factoryName != 0x0);
+        Registrar(factories).add(_kAddr);
+        RegistrarAdd("factories", _kAddr);
 
-        // Register new factory into the "factories" registrar
-        registrar = Registrar(metaRegistrar.namedAddress("factories"));
-        registrar.add(_kAddr);
+        // Create a registrar of same factory name if one doesn't exist
+        if (0x0 == Registrar(registrars).addressByName(factoryName)) {
+            if (price > 0) { Withdrawal(msg.sender, regFactory, price); }
 
-        // Create registrar of same factory name if one doesn't exist
-        if (0 == metaRegistrar.namedIndex(fRegName)) {
-            factory = Factory(getAddressByName("factories", "registrar"));
-            metaRegistrar.add(factory.createNew(fRegName, address(0)));
+            address registrar = Factory(regFactory)
+                    .createNew
+                    .value(price)(factoryName, this);
+            ProductCreated(this, factoryName, registrar);
+            // Register the new registrar in the registrars ragistrar
+            Registrar(registrars).add(registrar);
+            RegistrarAdd("registrar", registrar);
+            metaRegistrar.add(registrar);
+            RegistrarAdd("metaregistrar", registrar);
         }
-        
-        FactoryAdded(fRegName, _kAddr);
         return true;
     }
-    
-    function getFeeFor(address _factory)
-        constant
-        returns (uint)
-    {
-        // Get chosen factory and ensure it exists
-        Factory factory = Factory(_factory);
 
-        // Get fee from chosen factory        
-        uint256 factoryFee = factory.value();
-        
-        // Get Straps fee if a value is registered. Straps owner gets free.
-        address feeAddr = metaRegistrar.namedAddress("newfromfactoryfee");
-        uint256 newFromFactoryFee = (0x0 == feeAddr || msg.sender == owner) ?
-            0 : Value(feeAddr).value();
-        
-        return (factoryFee + newFromFactoryFee);
-    }
-    
     /// @notice Create a new contract with name `_regName` from factory
     /// `_factory`
     /// @param _factory The registered name of a factory
     /// @param _regName the name to register the new product contract under
+    /// @param _prodOwner product owner address. msg.sender if == 0x0
     /// @dev a fee may be payable consisting of a 'newFromFactoryFee' and/or
     /// the factory fee itself. If the caller is the SandalStraps owner,
     /// 'newFromFactoryFee' is 0.
     /// @return bool value indicating success
-    function newFromFactory(bytes32 _factory, bytes32 _regName)
+    function newProduct(bytes32 _factory, bytes32 _regName, address _prodOwner)
+        public
         payable
+        preventReentry
         returns (address kAddr_)
     {
+        // Only owner can use reserved regNames
+        require(msg.sender == owner || !reservedNames[_regName]);
+        
+        if (msg.value > 0) { Deposit(msg.sender, msg.value); }
+        
+        _prodOwner = _prodOwner != 0x0 ? _prodOwner : msg.sender;
+        
         // Get chosen factory and ensure it exists
-        Factory factory = Factory(getAddressByName("factories", _factory));
-        require(0x0 != address(factory));
+        Factory factory = Factory(addressByNameFrom("factories", _factory));
         
-        // Get the factory's registrar and ensure `regName` is no registers
-        Registrar registrar = Registrar(metaRegistrar.namedAddress(_factory));
-        require(0 == registrar.namedIndex(_regName));
+        // Get the factory's registrar and ensure `_regName` is not registered
+        Registrar registrar = Registrar(metaRegistrar.addressByName(_factory));
 
-        // Get fee from chosen factory        
-        uint256 factoryFee = factory.value();
+        // Get price from factory        
+        uint256 price = factory.value();
         
-        // Get Straps fee if a value is registered. Straps owner gets free.
-        address feeAddr = metaRegistrar.namedAddress("newfromfactoryfee");
-        uint256 newFromFactoryFee = (0x0 == feeAddr || msg.sender == owner) ?
-            0 : Value(feeAddr).value();
+        // Get product commission divisor if a value is registered.
+        address commissionAddr = metaRegistrar.addressByName("sscommission");
+        uint divisor = (0x0 == commissionAddr) ? 0 :
+                Value(commissionAddr).value();
+
+        // Get full price (need to protect against divide by 0 on unset
+        // commision divisor value)
+        uint fullPrice = (0 == divisor) ? price : price + price / divisor;
+        require(msg.value == fullPrice);
         
-        // Check correct fee has been sent
-        // Note that factory owner must also pay fee, but can then withdraw it
-        // from the factory
-        require(msg.value == factoryFee + newFromFactoryFee);
-        
-        // Create and register product contract
-        kAddr_ = factory.createNew
-                            .value(factoryFee)(_regName, msg.sender);
+        // Create the product contract
+        if (price > 0) { Withdrawal(msg.sender, kAddr_, price); }
+        kAddr_ = factory.createNew.value(price)(_regName, _prodOwner);
+        ProductCreated(msg.sender, _regName, kAddr_);
+
+        // Register The product contract. Will throw if product failed creation
         require(registrar.add(kAddr_));
-        ProductCreated(_regName, kAddr_);
-        return;
+        RegistrarAdd(_factory, kAddr_);
     }
     
     /// @notice Register contract at address `_kAddr` into registrar `_registrar`
     /// @param _registrar The registered name of a registrar
     /// @param _kAddr the address of a compliant contract to be registered
     /// @return bool value indicating success
-    function setRegistrarEntry(bytes32 _registrar, address _kAddr)
+    function addTo(bytes32 _registrar, address _kAddr)
         public
         onlyOwner
+        noReentry
         returns (bool)
     {
-        Registrar registrar = Registrar(metaRegistrar.namedAddress(_registrar));
+        Registrar registrar = Registrar(metaRegistrar.addressByName(_registrar));
         require(registrar.add(_kAddr));
+        RegistrarAdd(_registrar, _kAddr);
+        
+        return true;
+    }
+
+    /// @notice Register contract at address `_kAddr` into registrar `_registrar`
+    /// @param _registrar The registered name of a registrar
+    /// @param _kAddr the address of a compliant contract to be deregistered
+    /// @return bool value indicating success
+    function removeFrom(bytes32 _registrar, address _kAddr)
+    	public
+    	onlyOwner
+    	noReentry
+    	returns (bool)
+    {
+        Registrar registrar = Registrar(metaRegistrar.addressByName(_registrar));
+        require(registrar.remove(_kAddr));
+        RegistrarRemove(_registrar, _kAddr);
+
+        return true; 	
+    }
+    
+    /// @notice Set array of reserved `_regNames` to `_reserved`
+    /// @param _regNames An array of registry name to reserve
+    /// @param _reserved An array of boolean reservations.
+    /// @return bool value indicating success
+    function reserveNames(bytes32[] _regNames, bool[] _reserved)
+        public
+        onlyOwner
+        noReentry
+        returns (bool)
+    {
+        uint l = _regNames.length;
+        for (uint i; i < l; i++) {
+            reservedNames[_regNames[i]] = _reserved[i];
+        }
         return true;
     }
     
@@ -305,26 +452,32 @@ contract SandalStraps is RegBase
     /// @return bool value indicating success
     function withdrawAll()
         public
+        preventReentry
         returns (bool)
     {
-        address feeCollector = metaRegistrar.namedAddress("feecollector");
-        if (0x0 == feeCollector) feeCollector = owner;
-        feeCollector.transfer(this.balance);
+        address wallet = metaRegistrar.addressByName("sswallet");
+        // If no wallet specified, funds go to creator (typically the factory)
+        if (0x0 == wallet) wallet = creator;
+
+        Withdrawal(msg.sender, wallet, this.balance);
+        wallet.transfer(this.balance);
+
         return true;
     }
     
     /// @dev Allows the owner to make an arbitrary low level call as the
     /// contract
     /// @param _kAddr the address of the contract to call
-    /// @param _value The value in wei to be sent
     /// @param _callData The RLP encoded call data
     /// @return bool value indicating success
-    function callAsContract(address _kAddr, uint _value, bytes _callData)
+    function callAsContract(address _kAddr, bytes _callData)
         public
+        payable
         onlyOwner
+        preventReentry
         returns (bool)
     {
-        require(_kAddr.call.value(_value)(_callData));
+        require(_kAddr.call.value(msg.value)(_callData));
         return true;
     }
 
@@ -339,6 +492,7 @@ contract SandalStraps is RegBase
     function changeOwnerOf(address _kAddr, address _owner)
         public
         onlyOwner
+        noReentry
         returns (bool)
     {
         require(RegBase(_kAddr).changeOwner(_owner));
@@ -348,8 +502,9 @@ contract SandalStraps is RegBase
     /// @notice Receive ownership of a contract at `_kAddr`
     /// @param _kAddr The address of a contract transferring ownership
     /// @return bool value indicating success
-    function receiveOwnership(address _kAddr)
+    function receiveOwnershipOf(address _kAddr)
         public
+        noReentry
         returns (bool)
     {
         require(RegBase(_kAddr).acceptOwnership());
@@ -364,6 +519,7 @@ contract SandalStraps is RegBase
     function changeResourceOf(address _kAddr, bytes32 _resource)
         public
         onlyOwner
+        noReentry
         returns (bool)
     {
         require(RegBase(_kAddr).changeResource(_resource));
@@ -376,6 +532,7 @@ contract SandalStraps is RegBase
     function setValueOf(address _kAddr, uint _value)
         public
         onlyOwner
+        noReentry
         returns (bool)
     {
         require(Value(_kAddr).set(_value));
@@ -394,7 +551,7 @@ contract SandalStrapsFactory is Factory
     bytes32 constant public regName = "sandalstraps";
 
     /// @return version string
-    bytes32 constant public VERSION = "SandalStrapsFactory v0.3.3";
+    bytes32 constant public VERSION = "SandalStrapsFactory v0.4.0";
 
 //
 // Functions
@@ -409,9 +566,10 @@ contract SandalStrapsFactory is Factory
     /// `_owner` else `_creator` else msg.sender
     function SandalStrapsFactory(
         address _creator, bytes32 _regName, address _owner)
+        public
         Factory(_creator, regName, _owner)
     {
-        // nothing to construct
+        _regName; // Not passed to super. quite compiler warning
     }
 
     /// @notice Create a new product contract
@@ -421,11 +579,16 @@ contract SandalStrapsFactory is Factory
     /// msg.sender if 0x0
     /// @return kAddr_ The address of the new product contract
     function createNew(bytes32 _regName, address _owner)
+        public
         payable
-        feePaid
+        pricePaid
         returns (address kAddr_)
     {
-        kAddr_ = address(new SandalStraps(msg.sender, _regName, _owner));
+        kAddr_ = address(new SandalStraps(
+                this,
+                _regName,
+                _owner != 0x0 ? owner : msg.sender)
+            );
         Created(msg.sender, _regName, kAddr_);
     }
 }

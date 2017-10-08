@@ -1,8 +1,8 @@
 /******************************************************************************\
 
 file:   BytesMap.sol
-ver:    0.3.3
-updated:12-Sep-2017
+ver:    0.4.0
+updated:7-Oct-2017
 author: Darryl Morris (o0ragman0o)
 email:  o0ragman0o AT gmail.com
 
@@ -20,7 +20,9 @@ See MIT Licence for further details.
 
 Release Notes
 -------------
-* Using Factory 0.3.3 for `withdrawAll()` instead of `withdraw(<value>)`
+* Using Factory 0.4.0 for `withdrawAll()` instead of `withdraw(<value>)`
+* Change from 'fee' to 'price'
+ 
 
 
 \******************************************************************************/
@@ -35,7 +37,7 @@ contract BytesMap is RegBase
 // Constants
 //
 
-    bytes32 constant public VERSION = "BytesMap v0.3.3";
+    bytes32 constant public VERSION = "BytesMap v0.4.0";
 
 //
 // State Variables
@@ -61,6 +63,7 @@ contract BytesMap is RegBase
     /// @dev On 0x0 value for _owner or _creator, ownership precedence is:
     /// `_owner` else `_creator` else msg.sender
     function BytesMap(address _creator, bytes32 _regName, address _owner)
+        public
         RegBase(_creator, _regName, _owner)
     {
         // nothing to construct
@@ -73,16 +76,16 @@ contract BytesMap is RegBase
         public
         returns (bytes32 hash_)
     {
-        hash_ = sha3(msg.sender, _bytes);
+        hash_ = keccak256(msg.sender, _bytes);
         bytesMap[hash_] = _bytes;
         Stored(hash_);
     }
     
-    /// @notice Clear `_string`. Must be string owner
+    /// @notice Clear `_bytes`. Must be string owner
     function clear(bytes _bytes)
         public
     {
-        delete bytesMap[sha3(msg.sender, _bytes)];
+        delete bytesMap[keccak256(msg.sender, _bytes)];
     }
     
     /// @notice Clear string at hash key of `_hash`
@@ -91,7 +94,7 @@ contract BytesMap is RegBase
         public
         returns (bool)
     {
-        bytes32 check = sha3(msg.sender, bytesMap[_hash]);
+        bytes32 check = keccak256(msg.sender, bytesMap[_hash]);
         require(_hash == check || msg.sender == owner);
         delete bytesMap[_hash];
         return true;
@@ -109,7 +112,7 @@ contract BytesMapFactory is Factory
     bytes32 constant public regName = "bytesmap";
     
     /// @return version string
-    bytes32 constant public VERSION = "BytesMapFactory v0.3.3";
+    bytes32 constant public VERSION = "BytesMapFactory v0.4.0";
 
 //
 // Functions
@@ -124,9 +127,10 @@ contract BytesMapFactory is Factory
     /// `_owner` else `_creator` else msg.sender
     function BytesMapFactory(
             address _creator, bytes32 _regName, address _owner)
+        public
         Factory(_creator, regName, _owner)
     {
-        // nothing to construct
+        _regName; // Not passed to super. quite compiler warning
     }
 
     /// @notice Create a new product contract
@@ -136,8 +140,9 @@ contract BytesMapFactory is Factory
     /// msg.sender if 0x0
     /// @return kAddr_ The address of the new product contract
     function createNew(bytes32 _regName, address _owner)
+        public
         payable
-        feePaid
+        pricePaid
         returns (address kAddr_)
     {
         kAddr_ = address(new BytesMap(msg.sender, _regName, _owner));

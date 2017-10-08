@@ -1,8 +1,8 @@
 /******************************************************************************\
 
 file:   Value.sol
-ver:    0.3.3
-updated:12-Sep-2017
+ver:    0.4.0
+updated:7-Oct-2017
 author: Darryl Morris (o0ragman0o)
 email:  o0ragman0o AT gmail.com
 
@@ -22,7 +22,8 @@ See MIT Licence for further details.
 
 Release Notes
 -------------
-* Using Factory 0.3.3 for `withdrawAll()` instead of `withdraw(<value>)`
+* Using Factory 0.3.4 for `withdrawAll()` instead of `withdraw(<value>)`
+* changed from `fee` to `price`
 
 \******************************************************************************/
 
@@ -32,18 +33,21 @@ import "./Factory.sol";
 
 contract Value is RegBase
 {
-    bytes32 constant public VERSION = "Value v0.3.3";
+    bytes32 constant public VERSION = "Value v0.4.0";
     uint public value;
 
     function Value(address _creator, bytes32 _regName, address _owner)
+        public
         RegBase(_creator, _regName, _owner)
     {
         // nothing to construct
     }
     
-    function set(uint _value) returns (bool)
+    function set(uint _value)
+        public
+        onlyOwner
+        returns (bool)
     {
-        require(msg.sender == owner);
         value = _value;
         return true;
     }
@@ -60,7 +64,7 @@ contract ValueFactory is Factory
     bytes32 constant public regName = "value";
 
     /// @return version string
-    bytes32 constant public VERSION = "ValueFactory v0.3.3";
+    bytes32 constant public VERSION = "ValueFactory v0.4.0";
 
 //
 // Function
@@ -74,9 +78,10 @@ contract ValueFactory is Factory
     /// @dev On 0x0 value for _owner or _creator, ownership precedence is:
     /// `_owner` else `_creator` else msg.sender
     function ValueFactory(address _creator, bytes32 _regName, address _owner)
+        public
         Factory(_creator, regName, _owner)
     {
-        // nothing to construct
+        _regName; // Not passed to super. quite compiler warning
     }
 
     /// @notice Create a new product contract
@@ -86,8 +91,9 @@ contract ValueFactory is Factory
     /// msg.sender if 0x0
     /// @return kAddr_ The address of the new product contract
     function createNew(bytes32 _regName, address _owner)
+        public
         payable
-        feePaid
+        pricePaid
         returns (address kAddr_)
     {
         kAddr_ = address(new Value(msg.sender, _regName, _owner));

@@ -1,8 +1,8 @@
 /******************************************************************************\
 
 file:   RegBase.sol
-ver:    0.3.3
-updated:12-Sep-2017
+ver:    0.4.0
+updated:7-Oct-2017
 author: Darryl Morris (o0ragman0o)
 email:  o0ragman0o AT gmail.com
 
@@ -22,7 +22,8 @@ See MIT Licence for further details.
 <https://opensource.org/licenses/MIT>.
 
 Release notes:
-* Framworking changing to Factory v0.3.3 usage
+* Framworking changing to Factory v0.4.0 usage
+
 \******************************************************************************/
 
 pragma solidity ^0.4.13;
@@ -89,7 +90,7 @@ contract RegBase is RegBaseAbstract
 // Constants
 //
 
-    bytes32 constant public VERSION = "RegBase v0.3.3";
+    bytes32 constant public VERSION = "RegBase v0.4.0";
 
 //
 // State Variables
@@ -121,6 +122,7 @@ contract RegBase is RegBaseAbstract
     /// @dev On 0x0 value for owner, ownership precedence is:
     /// `_owner` else `_creator` else msg.sender
     function RegBase(address _creator, bytes32 _regName, address _owner)
+        public
     {
         require(_regName != 0x0);
         regName = _regName;

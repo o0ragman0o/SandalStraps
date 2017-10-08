@@ -1,8 +1,8 @@
 /******************************************************************************\
 
 file:   Registrar.sol
-ver:    0.3.3
-updated:12-Sep-2017
+ver:    0.4.0
+updated:7-Oct-2017
 author: Darryl Morris (o0ragman0o)
 email:  o0ragman0o AT gmail.com
 
@@ -30,7 +30,8 @@ See MIT Licence for further details.
 
 Release Notes
 -------------
-* Using Factory 0.3.3 for `withdrawAll()` instead of `withdraw(<value>)`
+* Using Factory 0.4.0 for `withdrawAll()` instead of `withdraw(<value>)`
+* Completely breaking change.  Renamed all getters to more intuitive identifiers
 
 
 \******************************************************************************/
@@ -47,7 +48,7 @@ contract Registrar is RegBase
 //
 
     /// @return The contract version number
-    bytes32 constant public VERSION = "Registrar v0.3.3";
+    bytes32 constant public VERSION = "Registrar v0.4.0";
 
 //
 // State Variables
@@ -62,11 +63,11 @@ contract Registrar is RegBase
 
     /// @dev `indexAddress` maps Index -> Address
     /// @return The registered address at an index
-    mapping (uint => address) public indexedAddress;
+    mapping (uint => address) public addressByIndex;
     
-    /// @dev `namedIndex` maps a contracts `regName` -> Index
+    /// @dev `indexByName` maps a contracts `regName` -> Index
     /// @return The registration index of a registered contracts name
-    mapping (bytes32 => uint) public namedIndex;
+    mapping (bytes32 => uint) public indexByName;
 
 //
 //Modifiers
@@ -102,13 +103,18 @@ contract Registrar is RegBase
     /// @dev On 0x0 value for _owner or _creator, ownership precedence is:
     /// `_owner` else `_creator` else msg.sender
     function Registrar(address _creator, bytes32 _regName, address _owner)
+        public
         RegBase(_creator, _regName, _owner)
     {
         // nothing to construct
     }
 
     // ENS compliant interface
-    function supportsInterface(bytes4 interfaceID) constant returns (bool) {
+    function supportsInterface(bytes4 interfaceID) 
+        public
+        pure
+        returns (bool)
+    {
         return interfaceID == 0x3b3b57de;
     }
 
@@ -121,44 +127,44 @@ contract Registrar is RegBase
         constant
         returns (address kAddr_)
     {
-        kAddr_ = indexedAddress[namedIndex[_regName]];
+        kAddr_ = addressByIndex[indexByName[_regName]];
         require(kAddr_ != 0x0);
     }
     
     /// @dev Return the registered address named `_regName`
     /// @param _regName A registered name
-    /// @param addr_ The registered address
-    /// @return addr_
-    function namedAddress(bytes32 _regName)
+    /// @param kAddr_ The registered address
+    /// @return kAddr_
+    function addressByName(bytes32 _regName)
         public
         constant
-        returns (address addr_)
+        returns (address kAddr_)
     {
-        addr_ = indexedAddress[namedIndex[_regName]];
+        kAddr_ = addressByIndex[indexByName[_regName]];
     }
     
     /// @dev Returns a contracts `index` given its address
     /// @param _addr A registered address
     /// @param idx_ The registration index
     /// @return idx_
-    function addressIndex(address _addr)
+    function indexByAddress(address _addr)
         public
         constant
         returns (uint idx_)
     {
-        idx_ = namedIndex[RegBase(_addr).regName()];
+        idx_ = indexByName[RegBase(_addr).regName()];
     }
 
     /// @dev Returns a contracts `regName` given its index
     /// @param _idx a registration index
     /// @param regName_ The name of a registered contract 
     /// @return regName_
-    function indexName(uint _idx)
+    function nameByIndex(uint _idx)
         public
         constant
         returns (bytes32 regName_)
     {
-        regName_ = RegBase(indexedAddress[_idx]).regName();
+        regName_ = RegBase(addressByIndex[_idx]).regName();
     }
     
     /// @notice Add contract address `_addr` to the registrar.
@@ -166,7 +172,7 @@ contract Registrar is RegBase
     /// Sender must be Registrar owner or owner of both new and registered
     /// contracts to update.
     /// Update is determined by prior registration of a `regName`.
-    /// @dev Providing a prior address of an updated entry to `addressIndex()`
+    /// @dev Providing a prior address of an updated entry to `indexByAddress()`
     /// can be used to discover the newer contract. This is useful for upgrade
     /// path discovery
     /// @param _addr An address of a SandalStraps compliant contract
@@ -181,21 +187,21 @@ contract Registrar is RegBase
         require(regName != 0x0);
         
         // Get the index of the regName. 0 == not registered
-        uint idx = namedIndex[regName];
+        uint idx = indexByName[regName];
 
         // Prevent overwritting registrations if not the registrar owner or
         // contract's owner 
         if (0 != idx)
         {
             require(msg.sender == owner || 
-                msg.sender == RegBase(indexedAddress[idx]).owner());
+                msg.sender == RegBase(addressByIndex[idx]).owner());
         } else {
             idx = ++size;
         }
         
         // Register the contract
-        indexedAddress[idx] = _addr;
-        namedIndex[regName] = idx;
+        addressByIndex[idx] = _addr;
+        indexByName[regName] = idx;
         Registered(regName, _addr);
         return true;
     }
@@ -210,8 +216,8 @@ contract Registrar is RegBase
         returns (bool)
     {
         bytes32 regName = RegBase(_addr).regName();
-        delete indexedAddress[addressIndex(_addr)];
-        delete namedIndex[regName];
+        delete addressByIndex[indexByAddress(_addr)];
+        delete indexByName[regName];
         Removed(regName, _addr);
         return true;
     }
@@ -225,7 +231,7 @@ contract RegistrarFactory is Factory
 //
 
     bytes32 constant public regName = "registrar";
-    bytes32 constant public VERSION = "RegistrarFactory v0.3.3";
+    bytes32 constant public VERSION = "RegistrarFactory v0.4.0";
 
 //
 // Functions
@@ -239,9 +245,10 @@ contract RegistrarFactory is Factory
     /// @dev On 0x0 value for _owner or _creator, ownership precedence is:
     /// `_owner` else `_creator` else msg.sender
     function RegistrarFactory(address _creator, bytes32 _regName, address _owner)
+        public
         Factory(_creator, regName, _owner)
     {
-        // nothing to construct
+        _regName; // Not passed to super. quite compiler warning
     }
 
     /// @notice Create a new product contract
@@ -251,8 +258,9 @@ contract RegistrarFactory is Factory
     /// msg.sender if 0x0
     /// @return kAddr_ The address of the new product contract
     function createNew(bytes32 _regName, address _owner)
+        public
         payable
-        feePaid
+        pricePaid
         returns(address kAddr_)
     {
         kAddr_ = address(new Registrar(msg.sender, _regName, _owner));

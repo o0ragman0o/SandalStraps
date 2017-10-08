@@ -1,8 +1,8 @@
 /******************************************************************************\
 
 file:   StringsMap.sol
-ver:    0.3.3
-updated:12-Sep-2017
+ver:    0.4.0
+updated:7-Oct-2017
 author: Darryl Morris (o0ragman0o)
 email:  o0ragman0o AT gmail.com
 
@@ -20,7 +20,8 @@ See MIT Licence for further details.
 
 Release notes
 -------------
-* Using Factory 0.3.3 for `withdrawAll()` instead of `withdraw(<value>)`
+* Using Factory 0.3.4 for `withdrawAll()` instead of `withdraw(<value>)`
+* Change from `fee` to `price`
 
 \******************************************************************************/
 
@@ -34,7 +35,7 @@ contract StringsMap is RegBase
 // Constants
 //
 
-    bytes32 constant public VERSION = "StringsMap v0.3.3";
+    bytes32 constant public VERSION = "StringsMap v0.4.0";
 
 //
 // State Variables
@@ -60,6 +61,7 @@ contract StringsMap is RegBase
     /// @dev On 0x0 value for _owner or _creator, ownership precedence is:
     /// `_owner` else `_creator` else msg.sender
     function StringsMap(address _creator, bytes32 _regName, address _owner)
+        public
         RegBase(_creator, _regName, _owner)
     {
         // nothing to construct
@@ -72,7 +74,7 @@ contract StringsMap is RegBase
         public
         returns (bytes32 hash_)
     {
-        hash_ = sha3(msg.sender, _string);
+        hash_ = keccak256(msg.sender, _string);
         strings[hash_] = _string;
         Stored(hash_);
     }
@@ -81,7 +83,7 @@ contract StringsMap is RegBase
     function clear(string _string)
         public
     {
-        delete strings[sha3(msg.sender, _string)];
+        delete strings[keccak256(msg.sender, _string)];
     }
     
     /// @notice Clear string at hash key of `_hash`
@@ -90,7 +92,7 @@ contract StringsMap is RegBase
         public
         returns (bool)
     {
-        bytes32 check = sha3(msg.sender, strings[_hash]);
+        bytes32 check = keccak256(msg.sender, strings[_hash]);
         require(_hash == check || msg.sender == owner);
         delete strings[_hash];
         return true;
@@ -108,7 +110,7 @@ contract StringsMapFactory is Factory
     bytes32 constant public regName = "stringsmap";
     
     /// @return version string
-    bytes32 constant public VERSION = "StringsMapFactory v0.3.3";
+    bytes32 constant public VERSION = "StringsMapFactory v0.4.0";
 
 //
 // Functions
@@ -123,9 +125,10 @@ contract StringsMapFactory is Factory
     /// `_owner` else `_creator` else msg.sender
     function StringsMapFactory(
             address _creator, bytes32 _regName, address _owner)
+        public
         Factory(_creator, regName, _owner)
     {
-        // nothing to construct
+        _regName; // Not passed to super. quite compiler warning
     }
 
     /// @notice Create a new product contract
@@ -135,8 +138,9 @@ contract StringsMapFactory is Factory
     /// msg.sender if 0x0
     /// @return kAddr_ The address of the new product contract
     function createNew(bytes32 _regName, address _owner)
+        public
         payable
-        feePaid
+        pricePaid
         returns (address kAddr_)
     {
         kAddr_ = address(new StringsMap(msg.sender, _regName, _owner));
