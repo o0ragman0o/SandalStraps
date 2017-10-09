@@ -2,7 +2,7 @@
 
 file:   RegBase.sol
 ver:    0.4.0
-updated:7-Oct-2017
+updated:9-Oct-2017
 author: Darryl Morris (o0ragman0o)
 email:  o0ragman0o AT gmail.com
 
@@ -23,7 +23,6 @@ See MIT Licence for further details.
 
 Release notes:
 * Framworking changing to Factory v0.4.0 usage
-
 \******************************************************************************/
 
 pragma solidity ^0.4.13;
@@ -96,10 +95,6 @@ contract RegBase is RegBaseAbstract
 // State Variables
 //
 
-    // Declared in RegBaseAbstract for reasons that an inherited abstract
-    // function is not seen as implimented by a public state identifier of
-    // the same name.
-    
 //
 // Modifiers
 //

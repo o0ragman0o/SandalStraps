@@ -2,14 +2,14 @@
 
 file:   Registrar.sol
 ver:    0.4.0
-updated:7-Oct-2017
+updated:9-Oct-2017
 author: Darryl Morris (o0ragman0o)
 email:  o0ragman0o AT gmail.com
 
 This file is a part of the SandalStraps framework
 
 Registrars are a core but independant concept of the SandalStraps framework.
-They provide indexed name/address storage and lookup functionality for compliant
+They provide indexed name/address storage and lookup functionality to compliant
 contracts.  A compliant contract requires `RegBase` as a minimum API.
 
 A registered contract can be looked up by unique keys of, `regName`, `address` 
@@ -18,9 +18,11 @@ and `index`.
 Only the `address` and `index` are stored in the registrar while `regName` is
 stored in and looked up from the registered contract.
 
-
 `Registrar` is itself Registrar compliant and so can be self registered or
 registered in another `Registrar` instance.
+
+`Registrar` is an ENS compliant resolver for the contracts registered in it.
+It impliments the EIP137 `address` record interface.
 
 This software is distributed in the hope that it will be useful,
 but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -32,6 +34,11 @@ Release Notes
 -------------
 * Using Factory 0.4.0 for `withdrawAll()` instead of `withdraw(<value>)`
 * Completely breaking change.  Renamed all getters to more intuitive identifiers
+* `indexedAddres()` to `addressByIndex()`
+* `namedIndex()` to `indexByName()`
+* `namedAddress` to `addressByName()`
+* `addressIndex()` to `indexByAddress()`
+* `indexName()` to `nameByIndex()`
 
 
 \******************************************************************************/
@@ -56,7 +63,7 @@ contract Registrar is RegBase
 
     // `size` is the index of the most rescent registration and does not 
     // decrease with removals.
-    // Indexing begins at 1 and not 0, so to avoid out-by-one errors, itterate
+    // Indexing begins at 1 and not 0, so to avoid out-by-one errors, iterate
     // in the form:
     //     for(i = 1; i <= size; i++) {...}
     uint public size;
@@ -248,7 +255,7 @@ contract RegistrarFactory is Factory
         public
         Factory(_creator, regName, _owner)
     {
-        _regName; // Not passed to super. quite compiler warning
+        _regName; // Not passed to super. Quiet compiler warning
     }
 
     /// @notice Create a new product contract

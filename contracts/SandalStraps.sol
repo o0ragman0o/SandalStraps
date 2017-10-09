@@ -29,6 +29,7 @@ Release Notes:
 * Added `event RegistrarRemove(bytes32 indexed _registrar, address indexed _kAddr);`
 * Added `reservedNames` mapping for to allow only owner to add reserved name contracts
 * Added `function changeReservedsName(bytes32 _regName, bool _reserved) returns (bool);
+* Added explicit reentry protection with `ReentryProtected` contract
 
 
 \******************************************************************************/
@@ -75,8 +76,11 @@ contract SandalStraps is ReentryProtected, RegBase, WithdrawableMinItfc
 //
 
     // Logged when a factory product is created
-    event ProductCreated(address indexed _by,
-        bytes32 indexed _regName, address indexed _kAddr);
+    event ProductCreated(
+        address indexed _by,
+        bytes32 indexed _factoryName,
+        bytes32 indexed _regName,
+        address _kAddr);
     
     // Logged when SandalStraps accepts ownership of a contract
     event ReceivedOwnership(address indexed _kAddr);
@@ -104,7 +108,10 @@ contract SandalStraps is ReentryProtected, RegBase, WithdrawableMinItfc
     {
     	creator = _creator;
         metaRegistrar = Registrar(bootstrap.createNew("metaregistrar", this));
-        ProductCreated(msg.sender, "metaregistrar", address(metaRegistrar));
+        ProductCreated(msg.sender,
+            "registrar",
+            "metaregistrar",            
+            address(metaRegistrar));
         reservedNames["metaregistrar"] = true;
         reservedNames["factories"] = true;
         reservedNames["registrar"] = true;
@@ -208,7 +215,7 @@ contract SandalStraps is ReentryProtected, RegBase, WithdrawableMinItfc
         fee_ = 0x0 == feeAddr ? 0 : Value(feeAddr).value();
     }
     
-    /// @returns div_ The commision divisor if set
+    /// @return div_ The commision divisor if `sscomission` Value is registered
     function getCommissionDivisor()
         public
         constant
@@ -252,13 +259,13 @@ contract SandalStraps is ReentryProtected, RegBase, WithdrawableMinItfc
         
         // Create and add 'factories' registrar to metaregistrar
         address factoriesReg = bootstrap.createNew("factories", this);
-        ProductCreated(msg.sender, "factories", factoriesReg);
+        ProductCreated(this, "registrar", "factories", factoriesReg);
         metaRegistrar.add(factoriesReg);
         RegistrarAdd("metaregistrar", factoriesReg);
         
         // Create and register the 'registrar' registrar
         address registrarReg = bootstrap.createNew("registrar", this);
-        ProductCreated(msg.sender, "registrar", registrarReg);
+        ProductCreated(this, "registrar", "registrar", registrarReg);
         metaRegistrar.add(registrarReg);
         RegistrarAdd("metaregistrar", registrarReg);
 
@@ -317,11 +324,14 @@ contract SandalStraps is ReentryProtected, RegBase, WithdrawableMinItfc
         
         // Get registrar factory price
         uint price = Value(regFactory).value();
-        require(msg.value == fee + price);
 
-        // Get factory registration fee
+        // Get factory registration fee. Owner pays only factory price
         address feeValue = metaRegistrar.addressByName("ssfactoryfee");
-        uint fee = feeValue == 0x0 ? 0 : Value(feeValue).value();
+        uint fee = feeValue == 0x0 ? 0 :
+                    msg.sender == owner ? 0 :
+                    Value(feeValue).value();
+
+        require(msg.value == fee + price);
         
         // Get the added factory's `regName` and validate it
         bytes32 factoryName = RegBase(_kAddr).regName();
@@ -336,7 +346,7 @@ contract SandalStraps is ReentryProtected, RegBase, WithdrawableMinItfc
             address registrar = Factory(regFactory)
                     .createNew
                     .value(price)(factoryName, this);
-            ProductCreated(this, factoryName, registrar);
+            ProductCreated(this, "registrar", factoryName, registrar);
             // Register the new registrar in the registrars ragistrar
             Registrar(registrars).add(registrar);
             RegistrarAdd("registrar", registrar);
@@ -390,7 +400,7 @@ contract SandalStraps is ReentryProtected, RegBase, WithdrawableMinItfc
         // Create the product contract
         if (price > 0) { Withdrawal(msg.sender, kAddr_, price); }
         kAddr_ = factory.createNew.value(price)(_regName, _prodOwner);
-        ProductCreated(msg.sender, _regName, kAddr_);
+        ProductCreated(msg.sender, _factory, _regName, kAddr_);
 
         // Register The product contract. Will throw if product failed creation
         require(registrar.add(kAddr_));
@@ -569,7 +579,7 @@ contract SandalStrapsFactory is Factory
         public
         Factory(_creator, regName, _owner)
     {
-        _regName; // Not passed to super. quite compiler warning
+        _regName; // Not passed to super. Quiet compiler warning
     }
 
     /// @notice Create a new product contract

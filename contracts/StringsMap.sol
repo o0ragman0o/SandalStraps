@@ -128,7 +128,7 @@ contract StringsMapFactory is Factory
         public
         Factory(_creator, regName, _owner)
     {
-        _regName; // Not passed to super. quite compiler warning
+        _regName; // Not passed to super. Quite compiler warning
     }
 
     /// @notice Create a new product contract

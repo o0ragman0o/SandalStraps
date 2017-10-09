@@ -1,1 +1,0 @@
-testregwrap.sol

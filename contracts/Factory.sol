@@ -2,7 +2,7 @@
 
 file:   Factory.sol
 ver:    0.4.0
-updated:7-Oct-2017
+updated:9-Oct-2017
 author: Darryl Morris (o0ragman0o)
 email:  o0ragman0o AT gmail.com
 
@@ -29,9 +29,7 @@ See MIT Licence for further details.
 
 Release Notes
 -------------
-* Changed from`withdaw(<value>)` to `withdrawAll()`
-* Set default function to be payable to recieve product commissions
-* Changed _fee to _price
+* Using 0.4.0 framework
 \******************************************************************************/
 
 pragma solidity ^0.4.13;
@@ -65,24 +63,15 @@ contract Factory is RegBase
 //
 
     // Is triggered when a product is created
-    event Created(address indexed _creator, bytes32 indexed _regName, address indexed _kAddr);
-    
-    // Logged upon receiving a deposit
-    event Deposit(address indexed _from, uint _value);
-    
-    // Logged upon a withdrawal
-    event Withdrawal(address indexed _by, address indexed _to, uint _value);
+    event Created(address indexed _creator, bytes32 indexed _regName, address indexed _addr);
 
 //
 // Modifiers
 //
 
     // To check that the correct fee has bene paid
-    modifier pricePaid() {
-        require(msg.value == value);
-        if(msg.value > 0)
-            // Log deposit if fee was paid
-            Deposit(msg.sender, msg.value);
+    modifier feePaid() {
+        require(msg.value == value || msg.sender == owner);
         _;
     }
 
@@ -98,27 +87,18 @@ contract Factory is RegBase
     /// @dev On 0x0 value for _owner or _creator, ownership precedence is:
     /// `_owner` else `_creator` else msg.sender
     function Factory(address _creator, bytes32 _regName, address _owner)
-        public
         RegBase(_creator, _regName, _owner)
     {
         // nothing left to construct
     }
     
-    function ()
-        public
-        payable
-    {
-        Deposit(msg.sender, msg.value);
-    }
-
     /// @notice Set the product creation fee
-    /// @param _price The desired fee in wei
-    function set(uint _price)
-        public
+    /// @param _fee The desired fee in wei
+    function set(uint _fee) 
         onlyOwner
         returns (bool)
     {
-        value = _price;
+        value = _fee;
         return true;
     }
 
@@ -127,7 +107,6 @@ contract Factory is RegBase
         public
         returns (bool)
     {
-        Withdrawal(msg.sender, owner, this.balance);
         owner.transfer(this.balance);
         return true;
     }
@@ -138,8 +117,8 @@ contract Factory is RegBase
     /// @param _owner An address of a third party owner.  Will default to
     /// msg.sender if 0x0
     /// @return kAddr_ The address of the new product contract
-    function createNew(bytes32 _regName, address _owner)
-        public payable returns(address kAddr_);
+    function createNew(bytes32 _regName, address _owner) 
+        payable returns(address kAddr_);
 }
 
 /* Example implimentation of `createNew()` for a deriving factory
