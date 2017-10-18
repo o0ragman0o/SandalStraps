@@ -32,7 +32,7 @@ by the factory owner
 ```
 function setValue(uint _fee);
 ```
-Sets the fee required to created product contracts
+Sets the price to be paid in ether to created product contracts
 
 `_fee` A fee value in wei
 

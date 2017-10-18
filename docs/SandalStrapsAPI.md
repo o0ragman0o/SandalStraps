@@ -2,7 +2,7 @@
 
 NOTE: This contract requires post deployment initialization by calling `_init1()` and `_init2`
 
-The `SandalStraps` kernel calls a predeployed Registrar factory.
+Upon construction the `SandalStraps` kernel calls a predeployed `RegistrarFactory`.
 Once it is deployed, two initialisation functions, `init1()` 
 `init2()` are require to be called in sequence in order to build ancillary 
 registrars `factories` and `registrar` 
@@ -40,19 +40,19 @@ function creator() public constant returns (address)
 ```
 Returns the address that created the contract.
 
-### __initFuse
+### \_\_initFuse
 ```
 function __initFuse() public constant returns (uint8);
 ```
-Returns the current init level:
- 
+Returns the current init level
+
 1 - Call to `_init1()` required
 
 2 - Call to `_init2()` required
 
 0 - Contract has been initialized
 
-### _init1
+### \_init1
 ```
 function _init1() public returns (bool);
 ```
