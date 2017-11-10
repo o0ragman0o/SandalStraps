@@ -45,23 +45,23 @@ Returns a stored string given its key
 
 ### set
 ```
-function set(bytes4 _desc, bytes _bytes);
+function set(bytes4 _type, bytes _bytes);
 ```
 Stores an owned byte array in the mapping keyed by a sha3 contatination of
 
 `msg.sender` with byte array content and 4 byte descriptor prefix.
 
-`_desc` A four byte data type descriptor
+`_type` A four byte data type descriptor
 
 `_bytes` The byte array to store
 
 ### clear (by byte array)
 ```
-function clear(bytes4 _desc, bytes _bytes);
+function clear(bytes4 _type, bytes _bytes);
 ```
 Allows a byte array owner to clear a stored byte array.
 
-`_desc` A four byte data type descriptor
+`_type` A four byte data type descriptor
 
 `_bytes` The string to be deleted.
 

@@ -75,7 +75,7 @@ contract BytesMap is RegBase
         // nothing to construct
     }
 
-    /// @notice Store bytes `_bytes` of descriptor type `_desc`
+    /// @notice Store bytes `_bytes` of descriptor type `_type`
     /// @dev Stores an owned bytes array in the mapping keyed by a sha3
     /// contatination of `_bytes` and `msg.sender` which is then prefixed with a
     /// usage type.

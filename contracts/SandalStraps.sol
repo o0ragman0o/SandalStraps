@@ -54,9 +54,8 @@ contract SandalStraps is ReentryProtected, RegBase, Owning, WithdrawableMinItfc
     bytes32 constant public VERSION = "SandalStraps v0.4.0";
 
     // Pre-deployed registrar factory address
-// TODO: set to pre deployed RegistrarFactory address
     address constant BOOTSTRAP = 0xDFd6dCCF429Fe7d4e8bba3f9c29c2C7CbA4f52EF;
-    // address BOOTSTRAP = new RegistrarFactory(0x0,"",0x0);
+
 //
 // State Variables
 //
