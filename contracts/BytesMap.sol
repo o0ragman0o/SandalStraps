@@ -79,23 +79,23 @@ contract BytesMap is RegBase
     /// @dev Stores an owned bytes array in the mapping keyed by a sha3
     /// contatination of `_bytes` and `msg.sender` which is then prefixed with a
     /// usage type.
-    /// @param _desc a 4 byte descriptor type, e.g. an ENS record interface or
+    /// @param _type a 4 byte descriptor type, e.g. an ENS record interface or
     /// IPFS multihash signature
     /// @param _bytes a bytes array to be stored
-    function store(bytes4 _desc, bytes _bytes)
+    function store(bytes4 _type, bytes _bytes)
         public
         returns (bytes32 hash_)
     {
-        hash_ = keccak256(msg.sender, _bytes) & TYPE_MASK | _desc;
+        hash_ = keccak256(msg.sender, _bytes) & TYPE_MASK | _type;
         bytesMap[hash_] = _bytes;
         Stored(hash_);
     }
     
     /// @notice Clear `_bytes`. Must be bytes owner or contract owner
-    function clear(bytes4 _desc, bytes _bytes)
+    function clear(bytes4 _type, bytes _bytes)
         public
     {
-        bytes32 hash = keccak256(msg.sender, _bytes) & TYPE_MASK | _desc;
+        bytes32 hash = keccak256(msg.sender, _bytes) & TYPE_MASK | _type;
         delete bytesMap[hash];
     }
     
