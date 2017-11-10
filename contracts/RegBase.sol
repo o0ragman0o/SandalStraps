@@ -2,7 +2,7 @@
 
 file:   RegBase.sol
 ver:    0.4.0
-updated:9-Oct-2017
+updated:8-Nov-2017
 author: Darryl Morris (o0ragman0o)
 email:  o0ragman0o AT gmail.com
 
@@ -22,10 +22,16 @@ See MIT Licence for further details.
 <https://opensource.org/licenses/MIT>.
 
 Release notes:
-* Framworking changing to Factory v0.4.0 usage
+* Frameworking changing to Factory v0.4.0 usage
+* Importing and inheriting from `Owning` 
+* pragma solidity 0.4.17 
+
 \******************************************************************************/
 
-pragma solidity ^0.4.13;
+pragma solidity ^0.4.17;
+
+import "https://github.com/o0ragman0o/Owned/contracts/Owned.sol";
+
 
 contract RegBaseAbstract
 {
@@ -38,29 +44,12 @@ contract RegBaseAbstract
     /// string in a StringsMap
     /// @return resource
     bytes32 public resource;
-    
-    /// @dev An address permissioned to enact owner restricted functions
-    /// @return owner
-    address public owner;
-    
-    /// @dev An address permissioned to take ownership of the contract
-    /// @return newOwner
-    address public newOwner;
 
 //
 // Events
 //
 
-    /// @dev Triggered on initiation of change owner address
-    event ChangeOwnerTo(address indexed _newOwner);
-
-    /// @dev Triggered on change of owner address
-    event ChangedOwner(address indexed _oldOwner, address indexed _newOwner);
-
-    /// @dev Triggered when the contract accepts ownership of another contract.
-    event ReceivedOwnership(address indexed _kAddr);
-
-    /// @dev Triggered on change of resource
+    /// @dev Logged on change of resource
     event ChangedResource(bytes32 indexed _resource);
 
 //
@@ -70,40 +59,20 @@ contract RegBaseAbstract
     /// @notice Will selfdestruct the contract
     function destroy() public;
 
-    /// @notice Initiate a change of owner to `_owner`
-    /// @param _owner The address to which ownership is to be transfered
-    function changeOwner(address _owner) public returns (bool);
-
-    /// @notice Finalise change of ownership to newOwner
-    function acceptOwnership() public returns (bool);
-
     /// @notice Change the resource to `_resource`
     /// @param _resource A key or short text to be stored as the resource.
     function changeResource(bytes32 _resource) public returns (bool);
 }
 
 
-contract RegBase is RegBaseAbstract
+contract RegBase is Owned, RegBaseAbstract
+// contract RegBase is RegBaseAbstract
 {
 //
 // Constants
 //
 
     bytes32 constant public VERSION = "RegBase v0.4.0";
-
-//
-// State Variables
-//
-
-//
-// Modifiers
-//
-
-    // Permits only the owner
-    modifier onlyOwner() {
-        require(msg.sender == owner);
-        _;
-    }
 
 //
 // Functions
@@ -133,30 +102,6 @@ contract RegBase is RegBaseAbstract
         selfdestruct(msg.sender);
     }
     
-    /// @notice Initiate a change of owner to `_owner`
-    /// @param _owner The address to which ownership is to be transfered
-    function changeOwner(address _owner)
-        public
-        onlyOwner
-        returns (bool)
-    {
-        ChangeOwnerTo(_owner);
-        newOwner = _owner;
-        return true;
-    }
-    
-    /// @notice Finalise change of ownership to newOwner
-    function acceptOwnership()
-        public
-        returns (bool)
-    {
-        require(msg.sender == newOwner);
-        ChangedOwner(owner, msg.sender);
-        owner = newOwner;
-        delete newOwner;
-        return true;
-    }
-
     /// @notice Change the resource to `_resource`
     /// @param _resource A key or short text to be stored as the resource.
     function changeResource(bytes32 _resource)

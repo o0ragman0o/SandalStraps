@@ -2,7 +2,7 @@
 
 file:   SandalStraps.sol
 ver:    0.4.0
-updated:8-Oct-2017
+updated:5-Nov-2017
 author: Darryl Morris (o0ragman0o)
 email:  o0ragman0o AT gmail.com
 
@@ -25,23 +25,27 @@ Release Notes:
 * Renamed registrar proxy getters according to registrar getter name changes
 * Removed `event RegistrarChange(bytes32 indexed _registrar, address indexed _kAddr);`
 * Added `function removeFrom(bytes32 _registrar, address _kAddr)`
-* Added `event RegistrarAdd(bytes32 indexed _registrar, address indexed _kAddr);`
+* Added `event RegistrarRegister(bytes32 indexed _registrar, address indexed _kAddr);`
 * Added `event RegistrarRemove(bytes32 indexed _registrar, address indexed _kAddr);`
 * Added `reservedNames` mapping for to allow only owner to add reserved name contracts
 * Added `function changeReservedsName(bytes32 _regName, bool _reserved) returns (bool);
 * Added explicit reentry protection with `ReentryProtected` contract
-
+* `addFactory()` to `registerFactory(address _kAddr)`
+* `addTo()` to `registerIn()
+* SandalStraps is Owning
+* pragma solidity 0.4.17
 
 \******************************************************************************/
 
-pragma solidity ^0.4.13;
+pragma solidity ^0.4.17;
 
+import "https://github.com/o0ragman0o/Owned/contracts/Owning.sol";
 import "https://github.com/o0ragman0o/Withdrawable/contracts/Withdrawable.sol";
 import "https://github.com/o0ragman0o/ReentryProtected/ReentryProtected.sol";
 import "./Registrar.sol";
 import "./Value.sol";
 
-contract SandalStraps is ReentryProtected, RegBase, WithdrawableMinItfc
+contract SandalStraps is ReentryProtected, RegBase, Owning, WithdrawableMinItfc
 {
 //
 // Constants
@@ -82,11 +86,8 @@ contract SandalStraps is ReentryProtected, RegBase, WithdrawableMinItfc
         bytes32 indexed _regName,
         address _kAddr);
     
-    // Logged when SandalStraps accepts ownership of a contract
-    event ReceivedOwnership(address indexed _kAddr);
-
     // Logged when a registrar entry is changed
-    event RegistrarAdd(bytes32 indexed _registrar, address indexed _kAddr);
+    event RegistrarRegister(bytes32 indexed _registrar, address indexed _kAddr);
 
     // Logged when a registrar entry is removed
     event RegistrarRemove(bytes32 indexed _registrar, address indexed _kAddr);
@@ -118,6 +119,7 @@ contract SandalStraps is ReentryProtected, RegBase, WithdrawableMinItfc
         reservedNames["sswallet"] = true;
         reservedNames["sscommision"] = true;
         reservedNames["ssfactoryfee"] = true;
+        reservedNames["ssbytes"] = true;
     }
 
     /// @dev Accepts funds to the default function
@@ -134,7 +136,7 @@ contract SandalStraps is ReentryProtected, RegBase, WithdrawableMinItfc
     /// @param _regName a contract's registrar name
     function addr(bytes32 _regName)
         public
-        constant
+        view
         returns (address kAddr_)
     {
         kAddr_ = metaRegistrar.addr(_regName);
@@ -147,7 +149,7 @@ contract SandalStraps is ReentryProtected, RegBase, WithdrawableMinItfc
     /// `_registrar`
     function addressByNameFrom(bytes32 _registrar, bytes32 _regName)
         public
-        constant
+        view
         returns (address kAddr_)
     {
         kAddr_ = Registrar(metaRegistrar.addressByName(_registrar))
@@ -160,7 +162,7 @@ contract SandalStraps is ReentryProtected, RegBase, WithdrawableMinItfc
     /// in `_registrar`
     function indexByNameFrom(bytes32 _registrar, bytes32 _regName)
         public
-        constant
+        view
         returns (uint idx_)
     {
         idx_ = Registrar(metaRegistrar.addressByName(_registrar))
@@ -173,7 +175,7 @@ contract SandalStraps is ReentryProtected, RegBase, WithdrawableMinItfc
     /// in `_registrar`
     function indexByAddressFrom(bytes32 _registrar, address _kAddr)
         public
-        constant
+        view
         returns (uint idx_)
     {
         idx_ = Registrar(metaRegistrar.addressByName(_registrar))
@@ -185,7 +187,7 @@ contract SandalStraps is ReentryProtected, RegBase, WithdrawableMinItfc
     /// @return regName_ The name of the contract registered in `_registrar`
     function nameByAddressFrom(bytes32 _registrar, address _kAddr)
         public
-        constant
+        view
         returns (bytes32 regName_)
     {
         regName_ = nameByIndexFrom(
@@ -197,7 +199,7 @@ contract SandalStraps is ReentryProtected, RegBase, WithdrawableMinItfc
     /// @return regName_ The name of the contract registered in `_registrar`
     function nameByIndexFrom(bytes32 _registrar, uint _idx)
         public
-        constant
+        view
         returns (bytes32 regName_)
     {
         regName_ = Registrar(metaRegistrar.addressByName(_registrar))
@@ -205,9 +207,9 @@ contract SandalStraps is ReentryProtected, RegBase, WithdrawableMinItfc
     }
     
     /// @return fee_ The fee in wei required to register a factory contract
-    function getAddFactoryFee()
+    function getRegisterFactoryFee()
         public
-        constant
+        view
         returns (uint fee_)
     {
         // Get fee for adding a factory if a fee value exists
@@ -218,7 +220,7 @@ contract SandalStraps is ReentryProtected, RegBase, WithdrawableMinItfc
     /// @return div_ The commision divisor if `sscomission` Value is registered
     function getCommissionDivisor()
         public
-        constant
+        view
         returns (uint div_)
     {
         address commissionAddr = metaRegistrar.addressByName("sscommission");
@@ -229,7 +231,7 @@ contract SandalStraps is ReentryProtected, RegBase, WithdrawableMinItfc
     /// @return price_ The price in wei required to create a `_factory` product
     function getProductPrice(bytes32 _factory)
     	public
-        constant
+        view
         returns (uint price_)
     {
         // Get fee from chosen factory        
@@ -260,14 +262,14 @@ contract SandalStraps is ReentryProtected, RegBase, WithdrawableMinItfc
         // Create and add 'factories' registrar to metaregistrar
         address factoriesReg = bootstrap.createNew("factories", this);
         ProductCreated(this, "registrar", "factories", factoriesReg);
-        metaRegistrar.add(factoriesReg);
-        RegistrarAdd("metaregistrar", factoriesReg);
+        metaRegistrar.register(factoriesReg);
+        RegistrarRegister("metaregistrar", factoriesReg);
         
         // Create and register the 'registrar' registrar
         address registrarReg = bootstrap.createNew("registrar", this);
         ProductCreated(this, "registrar", "registrar", registrarReg);
-        metaRegistrar.add(registrarReg);
-        RegistrarAdd("metaregistrar", registrarReg);
+        metaRegistrar.register(registrarReg);
+        RegistrarRegister("metaregistrar", registrarReg);
 
         __initFuse++;
         return true;
@@ -284,16 +286,16 @@ contract SandalStraps is ReentryProtected, RegBase, WithdrawableMinItfc
         require(2 == __initFuse);
         
         // Add this to metaregistrar
-        metaRegistrar.add(this);
-        RegistrarAdd("metaregistrar", this);
+        metaRegistrar.register(this);
+        RegistrarRegister("metaregistrar", this);
         
         // Add 'metaregistrar' to metaregistrar
-        metaRegistrar.add(metaRegistrar);
-        RegistrarAdd("metaregistrar", metaRegistrar);
+        metaRegistrar.register(metaRegistrar);
+        RegistrarRegister("metaregistrar", metaRegistrar);
         
         // Register the bootstrap registrar factory in 'factories' registrar
-        Registrar(metaRegistrar.addressByName("factories")).add(BOOTSTRAP);
-        RegistrarAdd("factories", BOOTSTRAP);
+        Registrar(metaRegistrar.addressByName("factories")).register(BOOTSTRAP);
+        RegistrarRegister("factories", BOOTSTRAP);
         
         delete __initFuse;
         return true;
@@ -305,7 +307,7 @@ contract SandalStraps is ReentryProtected, RegBase, WithdrawableMinItfc
     /// creates a registrar of the same name into which the product contracts of
     /// the factory are registered
     /// @return bool value indicating success
-    function addFactory(address _kAddr)
+    function registerFactory(address _kAddr)
         public
         payable
         preventReentry
@@ -336,8 +338,8 @@ contract SandalStraps is ReentryProtected, RegBase, WithdrawableMinItfc
         // Get the added factory's `regName` and validate it
         bytes32 factoryName = RegBase(_kAddr).regName();
         require(factoryName != 0x0);
-        Registrar(factories).add(_kAddr);
-        RegistrarAdd("factories", _kAddr);
+        Registrar(factories).register(_kAddr);
+        RegistrarRegister("factories", _kAddr);
 
         // Create a registrar of same factory name if one doesn't exist
         if (0x0 == Registrar(registrars).addressByName(factoryName)) {
@@ -348,10 +350,10 @@ contract SandalStraps is ReentryProtected, RegBase, WithdrawableMinItfc
                     .value(price)(factoryName, this);
             ProductCreated(this, "registrar", factoryName, registrar);
             // Register the new registrar in the registrars ragistrar
-            Registrar(registrars).add(registrar);
-            RegistrarAdd("registrar", registrar);
-            metaRegistrar.add(registrar);
-            RegistrarAdd("metaregistrar", registrar);
+            Registrar(registrars).register(registrar);
+            RegistrarRegister("registrar", registrar);
+            metaRegistrar.register(registrar);
+            RegistrarRegister("metaregistrar", registrar);
         }
         return true;
     }
@@ -403,23 +405,23 @@ contract SandalStraps is ReentryProtected, RegBase, WithdrawableMinItfc
         ProductCreated(msg.sender, _factory, _regName, kAddr_);
 
         // Register The product contract. Will throw if product failed creation
-        require(registrar.add(kAddr_));
-        RegistrarAdd(_factory, kAddr_);
+        require(registrar.register(kAddr_));
+        RegistrarRegister(_factory, kAddr_);
     }
     
     /// @notice Register contract at address `_kAddr` into registrar `_registrar`
     /// @param _registrar The registered name of a registrar
     /// @param _kAddr the address of a compliant contract to be registered
     /// @return bool value indicating success
-    function addTo(bytes32 _registrar, address _kAddr)
+    function registerIn(bytes32 _registrar, address _kAddr)
         public
         onlyOwner
         noReentry
         returns (bool)
     {
         Registrar registrar = Registrar(metaRegistrar.addressByName(_registrar));
-        require(registrar.add(_kAddr));
-        RegistrarAdd(_registrar, _kAddr);
+        require(registrar.register(_kAddr));
+        RegistrarRegister(_registrar, _kAddr);
         
         return true;
     }
@@ -462,7 +464,7 @@ contract SandalStraps is ReentryProtected, RegBase, WithdrawableMinItfc
     /// @return bool value indicating success
     function withdrawAll()
         public
-        preventReentry
+        noReentry
         returns (bool)
     {
         address wallet = metaRegistrar.addressByName("sswallet");
@@ -494,21 +496,6 @@ contract SandalStraps is ReentryProtected, RegBase, WithdrawableMinItfc
     // Proxy functions to interact with contracts owned by the SandalStraps
     // Instance.
 
-    /// @notice Change the owner of the owned contract `_kAddr` to `_owner`
-    /// @param _kAddr The address of the owned contract
-    /// @param _owner The address of the new owner
-    /// @dev could be used to migrate to an upgraded SandalStraps
-    /// @return bool value indicating success
-    function changeOwnerOf(address _kAddr, address _owner)
-        public
-        onlyOwner
-        noReentry
-        returns (bool)
-    {
-        require(RegBase(_kAddr).changeOwner(_owner));
-        return true;
-    }
-    
     /// @notice Receive ownership of a contract at `_kAddr`
     /// @param _kAddr The address of a contract transferring ownership
     /// @return bool value indicating success

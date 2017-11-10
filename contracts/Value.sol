@@ -2,7 +2,7 @@
 
 file:   Value.sol
 ver:    0.4.0
-updated:7-Oct-2017
+updated:5-Nov-2017
 author: Darryl Morris (o0ragman0o)
 email:  o0ragman0o AT gmail.com
 
@@ -24,10 +24,11 @@ Release Notes
 -------------
 * Using Factory 0.3.4 for `withdrawAll()` instead of `withdraw(<value>)`
 * changed from `fee` to `price`
+* pragma solidity 0.4.17 
 
 \******************************************************************************/
 
-pragma solidity ^0.4.13;
+pragma solidity ^0.4.17;
 
 import "./Factory.sol";
 

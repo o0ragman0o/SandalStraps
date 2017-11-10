@@ -2,14 +2,17 @@
 
 file:   BytesMap.sol
 ver:    0.4.0
-updated:7-Oct-2017
+updated:8-Nov-2017
 author: Darryl Morris (o0ragman0o)
 email:  o0ragman0o AT gmail.com
 
 This file is part of the SandalStraps framework
 
-StringsMap is a SandalStraps compliant wrapper to store strings keyed by their
-sha3 hash.  It can be used as a lookup for RegBase resources.
+BytesMap is a SandalStraps compliant wrapper to store bytes arrays keyed by
+their sha3 hash with the sender address and masked with a 4 byte type descriptor
+prefix. It can be used as a lookup for RegBase resources. The type descriptor
+could be for example an ENS interface signatures or IPFS multihash, Swarm
+address or UTF8 string.
 
 
 This software is distributed in the hope that it will be useful,
@@ -22,12 +25,13 @@ Release Notes
 -------------
 * Using Factory 0.4.0 for `withdrawAll()` instead of `withdraw(<value>)`
 * Change from 'fee' to 'price'
- 
+* Added 4 byte descriptor prefix to hash 
+* pragma solidity 0.4.17 
 
 
 \******************************************************************************/
 
-pragma solidity ^0.4.13;
+pragma solidity ^0.4.17;
 
 import "./Factory.sol";
 
@@ -38,6 +42,8 @@ contract BytesMap is RegBase
 //
 
     bytes32 constant public VERSION = "BytesMap v0.4.0";
+    bytes32 constant TYPE_MASK =
+        0x00000000ffffffffffffffffffffffffffffffffffffffffffffffffffffffff;
 
 //
 // State Variables
@@ -69,23 +75,28 @@ contract BytesMap is RegBase
         // nothing to construct
     }
 
-    /// @notice Store string `_string`
-    /// @dev Stores an owned string in the mapping keyed by a sha3 contatination
-    /// of `msg.sender` with `_string`
-    function store(bytes _bytes)
+    /// @notice Store bytes `_bytes` of descriptor type `_desc`
+    /// @dev Stores an owned bytes array in the mapping keyed by a sha3
+    /// contatination of `_bytes` and `msg.sender` which is then prefixed with a
+    /// usage type.
+    /// @param _desc a 4 byte descriptor type, e.g. an ENS record interface or
+    /// IPFS multihash signature
+    /// @param _bytes a bytes array to be stored
+    function store(bytes4 _desc, bytes _bytes)
         public
         returns (bytes32 hash_)
     {
-        hash_ = keccak256(msg.sender, _bytes);
+        hash_ = keccak256(msg.sender, _bytes) & TYPE_MASK | _desc;
         bytesMap[hash_] = _bytes;
         Stored(hash_);
     }
     
-    /// @notice Clear `_bytes`. Must be string owner
-    function clear(bytes _bytes)
+    /// @notice Clear `_bytes`. Must be bytes owner or contract owner
+    function clear(bytes4 _desc, bytes _bytes)
         public
     {
-        delete bytesMap[keccak256(msg.sender, _bytes)];
+        bytes32 hash = keccak256(msg.sender, _bytes) & TYPE_MASK | _desc;
+        delete bytesMap[hash];
     }
     
     /// @notice Clear string at hash key of `_hash`
@@ -94,8 +105,9 @@ contract BytesMap is RegBase
         public
         returns (bool)
     {
-        bytes32 check = keccak256(msg.sender, bytesMap[_hash]);
-        require(_hash == check || msg.sender == owner);
+        bytes32 check = keccak256(msg.sender, bytesMap[_hash]) & TYPE_MASK;
+        bytes32 hash = _hash & TYPE_MASK;
+        require(hash == check || msg.sender == owner);
         delete bytesMap[_hash];
         return true;
     }

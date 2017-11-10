@@ -2,10 +2,33 @@
 The `BytesMap` contract is a `SandalStraps` compliant contract that stores
 owned byte arrays in a `bytes32 => bytes` mapping.  This can be useful for storing
 `resource` bytes longer than 32 bytes. A `bytesMap` key is the sha3 hash of
-`msg.sender` and the byte array.  A byte array can only be deleted by the
+`msg.sender` and the byte array with the first four bytes masked out and replaced with a 
+type descriptor.  A byte array can only be deleted by the
 caller who set it or by the `BytesMap` owner using its mapping key.
 
-In addition to the `RegBase API`, a `SandalStraps` `StringMap` contract
+### Type Descriptors
+`0x00000000` Raw bytes data
+
+`0x00000001` ASCII string data
+
+`0x00000002` UTF8 string data
+
+`0x01ffc9a7` ENS INTERFACE_META_ID
+
+`0x3b3b57de` ENS ADDR_INTERFACE_ID
+
+`0xd8389dc5` ENS CONTENT_INTERFACE_ID
+
+`0x691f3431` ENS NAME_INTERFACE_ID
+
+`0x2203ab56` ENS ABI_INTERFACE_ID
+
+`0xc8690233` ENS PUBKEY_INTERFACE_ID
+
+`0x59d1d43c` ENS TEXT_INTERFACE_ID
+
+
+In addition to the `RegBase API`, a `SandalStraps` `BytesMap` contract
 exposes a minimum of the following functions:
 
 ```
@@ -22,19 +45,23 @@ Returns a stored string given its key
 
 ### set
 ```
-function set(bytes _bytes);
+function set(bytes4 _desc, bytes _bytes);
 ```
 Stores an owned byte array in the mapping keyed by a sha3 contatination of
 
-`msg.sender` with byte array content.
+`msg.sender` with byte array content and 4 byte descriptor prefix.
+
+`_desc` A four byte data type descriptor
 
 `_bytes` The byte array to store
 
 ### clear (by byte array)
 ```
-function clear
+function clear(bytes4 _desc, bytes _bytes);
 ```
 Allows a byte array owner to clear a stored byte array.
+
+`_desc` A four byte data type descriptor
 
 `_bytes` The string to be deleted.
 

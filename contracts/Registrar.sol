@@ -2,7 +2,7 @@
 
 file:   Registrar.sol
 ver:    0.4.0
-updated:9-Oct-2017
+updated:5-Nov-2017
 author: Darryl Morris (o0ragman0o)
 email:  o0ragman0o AT gmail.com
 
@@ -39,11 +39,12 @@ Release Notes
 * `namedAddress` to `addressByName()`
 * `addressIndex()` to `indexByAddress()`
 * `indexName()` to `nameByIndex()`
-
+* `add()` to `register()`
+* pragma solidity 0.4.17
 
 \******************************************************************************/
 
-pragma solidity ^0.4.13;
+pragma solidity ^0.4.17;
 
 import "./Factory.sol";
 
@@ -53,6 +54,10 @@ contract Registrar is RegBase
 //
 // Constants
 //
+
+    // Supported ENS interfaces
+    bytes4 constant ADDR_INTERFACE_ID = 0x3b3b57de;
+    bytes4 constant CONTENT_INTERFACE_ID = 0xd8389dc5;
 
     /// @return The contract version number
     bytes32 constant public VERSION = "Registrar v0.4.0";
@@ -84,7 +89,7 @@ contract Registrar is RegBase
     modifier onlyOwners(address _contract)
     {
         require(msg.sender == owner ||
-            msg.sender == RegBase(_contract).owner());
+            msg.sender == Owned(_contract).owner());
         _;
     }
 
@@ -117,12 +122,13 @@ contract Registrar is RegBase
     }
 
     // ENS compliant interface
-    function supportsInterface(bytes4 interfaceID) 
+    function supportsInterface(bytes4 _interfaceID) 
         public
         pure
         returns (bool)
     {
-        return interfaceID == 0x3b3b57de;
+        return _interfaceID == ADDR_INTERFACE_ID
+            || _interfaceID == CONTENT_INTERFACE_ID;
     }
 
     /// @dev Return the registered address named `_regName`. (ENS interface)
@@ -131,11 +137,24 @@ contract Registrar is RegBase
     /// @return kAddr_
     function addr(bytes32 _regName)
         public
-        constant
+        view
         returns (address kAddr_)
     {
         kAddr_ = addressByIndex[indexByName[_regName]];
         require(kAddr_ != 0x0);
+    }
+    
+    /// @dev Returns the 'resource' as the ENS content field of a contract
+    /// @param _regName A registered named
+    /// @param resource_ The resource SandalStraps
+    /// @return resource_
+    function content(bytes32 _regName) 
+        public
+        view
+        returns (bytes32 resource_)
+    {
+        address kAddr = addressByIndex[indexByName[_regName]];
+        resource_ = RegBase(kAddr).resource();
     }
     
     /// @dev Return the registered address named `_regName`
@@ -144,7 +163,7 @@ contract Registrar is RegBase
     /// @return kAddr_
     function addressByName(bytes32 _regName)
         public
-        constant
+        view
         returns (address kAddr_)
     {
         kAddr_ = addressByIndex[indexByName[_regName]];
@@ -156,7 +175,7 @@ contract Registrar is RegBase
     /// @return idx_
     function indexByAddress(address _addr)
         public
-        constant
+        view
         returns (uint idx_)
     {
         idx_ = indexByName[RegBase(_addr).regName()];
@@ -168,7 +187,7 @@ contract Registrar is RegBase
     /// @return regName_
     function nameByIndex(uint _idx)
         public
-        constant
+        view
         returns (bytes32 regName_)
     {
         regName_ = RegBase(addressByIndex[_idx]).regName();
@@ -184,7 +203,7 @@ contract Registrar is RegBase
     /// path discovery
     /// @param _addr An address of a SandalStraps compliant contract
     /// @return bool indicating call success
-    function add(address _addr)
+    function register(address _addr)
         public
         onlyOwners(_addr)
         returns (bool)
