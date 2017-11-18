@@ -86,9 +86,9 @@ Returns a contract name given its index
 
 `regName_` The registration name of contract
 
-### add
+### register
 ```
-function add(address _kAddr);
+function register(address _kAddr);
 ```
 Registers or updates a contract by providing its address. 
 If the contracts `regName` is already registered then the caller must be the 
@@ -109,11 +109,11 @@ owner
 ```
 event Registered(bytes32 indexed _regName, address indexed _address);
 ```
-Triggered when an address is registered
+Logged when an address is registered
 
 ### Removed    
 ```
 event Removed(bytes32 indexed _regName, address indexed _address);
 ```
-Triggered when an address is unregistered
+Logged when an address is unregistered
     

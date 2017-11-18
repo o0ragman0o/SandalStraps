@@ -2,7 +2,7 @@
 
 file:   Registrar.sol
 ver:    0.4.0
-updated:5-Nov-2017
+updated:13-Nov-2017
 author: Darryl Morris (o0ragman0o)
 email:  o0ragman0o AT gmail.com
 
@@ -40,6 +40,7 @@ Release Notes
 * `addressIndex()` to `indexByAddress()`
 * `indexName()` to `nameByIndex()`
 * `add()` to `register()`
+* removed improper ENS implementations of `addr()` and `content`
 * pragma solidity 0.4.17
 
 \******************************************************************************/
@@ -54,10 +55,6 @@ contract Registrar is RegBase
 //
 // Constants
 //
-
-    // Supported ENS interfaces
-    bytes4 constant ADDR_INTERFACE_ID = 0x3b3b57de;
-    bytes4 constant CONTENT_INTERFACE_ID = 0xd8389dc5;
 
     /// @return The contract version number
     bytes32 constant public VERSION = "Registrar v0.4.0";
@@ -119,42 +116,6 @@ contract Registrar is RegBase
         RegBase(_creator, _regName, _owner)
     {
         // nothing to construct
-    }
-
-    // ENS compliant interface
-    function supportsInterface(bytes4 _interfaceID) 
-        public
-        pure
-        returns (bool)
-    {
-        return _interfaceID == ADDR_INTERFACE_ID
-            || _interfaceID == CONTENT_INTERFACE_ID;
-    }
-
-    /// @dev Return the registered address named `_regName`. (ENS interface)
-    /// @param _regName A registered name
-    /// @param kAddr_ The registered address
-    /// @return kAddr_
-    function addr(bytes32 _regName)
-        public
-        view
-        returns (address kAddr_)
-    {
-        kAddr_ = addressByIndex[indexByName[_regName]];
-        require(kAddr_ != 0x0);
-    }
-    
-    /// @dev Returns the 'resource' as the ENS content field of a contract
-    /// @param _regName A registered named
-    /// @param resource_ The resource SandalStraps
-    /// @return resource_
-    function content(bytes32 _regName) 
-        public
-        view
-        returns (bytes32 resource_)
-    {
-        address kAddr = addressByIndex[indexByName[_regName]];
-        resource_ = RegBase(kAddr).resource();
     }
     
     /// @dev Return the registered address named `_regName`

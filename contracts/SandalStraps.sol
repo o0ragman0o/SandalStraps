@@ -2,7 +2,7 @@
 
 file:   SandalStraps.sol
 ver:    0.4.0
-updated:5-Nov-2017
+updated:13-Nov-2017
 author: Darryl Morris (o0ragman0o)
 email:  o0ragman0o AT gmail.com
 
@@ -131,17 +131,6 @@ contract SandalStraps is ReentryProtected, RegBase, Owning, WithdrawableMinItfc
     }
     
 /* Public Constant functions */
-
-    /// @dev ENS resolver for metaRegistrar registered contracts
-    /// @param _regName a contract's registrar name
-    function addr(bytes32 _regName)
-        public
-        view
-        returns (address kAddr_)
-    {
-        kAddr_ = metaRegistrar.addr(_regName);
-        require(kAddr_ != 0x0);
-    }
 
     /// @param _registrar The name of a registered registrar
     /// @param _regName The name of a registed contract to query
@@ -586,6 +575,6 @@ contract SandalStrapsFactory is Factory
                 _regName,
                 _owner != 0x0 ? owner : msg.sender)
             );
-        Created(msg.sender, _regName, kAddr_);
+        Created(this, _regName, kAddr_);
     }
 }
