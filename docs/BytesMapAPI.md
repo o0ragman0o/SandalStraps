@@ -9,10 +9,6 @@ caller who set it or by the `BytesMap` owner using its mapping key.
 ### Type Descriptors
 `0x00000000` Raw bytes data
 
-`0x00000001` ASCII string data
-
-`0x00000002` UTF8 string data
-
 `0x01ffc9a7` ENS INTERFACE_META_ID
 
 `0x3b3b57de` ENS ADDR_INTERFACE_ID
@@ -27,6 +23,16 @@ caller who set it or by the `BytesMap` owner using its mapping key.
 
 `0x59d1d43c` ENS TEXT_INTERFACE_ID
 
+`0x9ed19ddb` URI_INTERFACE_ID
+
+`0xc868992a` IPFS_INTERFACE_ID
+
+`0xcccac034` UTF8_INTERFACE_ID
+
+`0x9727fea0` ASCII_INTERFACE_ID
+
+`0x3952feb5` UUID_INTERFACE_ID
+
 
 In addition to the `RegBase API`, a `SandalStraps` `BytesMap` contract
 exposes a minimum of the following functions:
@@ -39,13 +45,13 @@ exposes a minimum of the following functions:
 ```
 function bytesMap(bytes32 _hash) constant returns (bytes bytes_);
 ```
-Returns a stored string given its key
+Returns a stored bytes array given its key
 
-`_hash` A mapping key the byte array is stored at 
+`_hash` A mapping key the byte array is stored at.
 
 ### set
 ```
-function set(bytes4 _type, bytes _bytes);
+function store(bytes4 _type, bytes _bytes) public returns (bytes32 hash_)
 ```
 Stores an owned byte array in the mapping keyed by a sha3 contatination of
 
@@ -54,6 +60,8 @@ Stores an owned byte array in the mapping keyed by a sha3 contatination of
 `_type` A four byte data type descriptor
 
 `_bytes` The byte array to store
+
+Returns bytes32 hash consisting of the first 4 byte being the descriptor with the remaing being the sha3 of the sender address and the bytes array
 
 ### clear (by byte array)
 ```

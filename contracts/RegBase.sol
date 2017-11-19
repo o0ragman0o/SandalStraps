@@ -2,7 +2,7 @@
 
 file:   RegBase.sol
 ver:    0.4.0
-updated:19-Nov-2017
+updated:8-Nov-2017
 author: Darryl Morris (o0ragman0o)
 email:  o0ragman0o AT gmail.com
 
@@ -25,7 +25,6 @@ Release notes:
 * Frameworking changing to Factory v0.4.0 usage
 * Importing and inheriting from `Owning` 
 * pragma solidity 0.4.17 
-* Added safe phrase to the destroy function
 
 \******************************************************************************/
 
@@ -58,7 +57,7 @@ contract RegBaseAbstract
 //
 
     /// @notice Will selfdestruct the contract
-    function destroy(bytes32 _safePhrase) public;
+    function destroy() public;
 
     /// @notice Change the resource to `_resource`
     /// @param _resource A key or short text to be stored as the resource.
@@ -91,18 +90,15 @@ contract RegBase is Owned, RegBaseAbstract
     {
         require(_regName != 0x0);
         regName = _regName;
-        // Owner precendence: _owner > _creator > msg.sender
         owner = _owner != 0x0 ? _owner : 
                 _creator != 0x0 ? _creator : msg.sender;
     }
     
-    /// @notice This action will selfdestruct the contract
-    /// @param _safePhrase must be equal to "Destroy this contract."
-    function destroy(bytes32 _safePhrase)
+    /// @notice Will selfdestruct the contract
+    function destroy()
         public
         onlyOwner
     {
-        require(_safePhrase == "I want to destroy this contract.");
         selfdestruct(msg.sender);
     }
     
