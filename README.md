@@ -69,23 +69,22 @@ There are four primary categorys of contracts in the framework:
 * **SandalStraps** kernel which holds and manages a registrar called
 `metaregistrar` in which *factories*, *registrars* and administerative contracts
 are registered.
-* **Registrars** hold *Name->Index* and *Index->Address* mappings to registered.
-They also implement then ENS `addr()` and `content()` interfaces
-contracts and can provide an iteration source for those entries.
+* **Registrars** hold *Name->Index* and *Index->Address* mappings to registered
+contract.
 * **Factories** are contracts containing bytecode of a product contract for 
 deployment.
 * **Product** contracts could be anything providing a required functionality and 
-are created by a registered factory and registered in a `registrar` of the same
+are created from a registered factory and registered in a `registrar` of the same
 name as the factory.  They may be independent from the framework or be an
 interactive component unto it.
 * **Ancillary** contracts are any contracts that support the framework or
-organization by providing managment controls such as fee values, permissioning,
-and string of `bytes` mappings for contract resource lookup.
+organization by providing managment controls such as fee values, permissioning or
+bytes mappings for contract resource lookup.
 
 A *SandalStraps* organization can be considered to be the sum total of contract
 functionally and data registered in its `metaRegistrar`.  In this way
 administrative and functional components can be added or updgraded by
-registering the necessary contracts and their factories.  If and organizations
+registering the necessary contracts and their factories.  If an organization's
 SandalStraps kernel itself requires upgrading then ownership of its
 `metaRegistrar` can simply be transferred to the new kernal.
   
@@ -96,7 +95,7 @@ has the minimum set of properties and methods in order to be managed by
 `registrar` and UI components:
 
 * `<ContractName>(address _creator, bytes32 _regName, address _owner)` - The compliant constructor
-* `address owner` - An addressed used for permissioned action upon the contract
+* `address owner` - An address used for owner permissioned actions upon the contract
 * `bytes32 regName` - A name by which a contract is read by a `Registrar` contract
 * `bytes32 resource` - A datum which can be interpreted to discover additional resources pertaining to the contract
 * `changeOwner(address _addr)` - A function by which contract ownership transfer is initited
@@ -105,17 +104,22 @@ An initialization function may be required where a contract would normally initi
 
 * `_init(<args>)`
 
-Additional interfaces that are used in the framework consist of the `Value` API and [`Withdrawable`](https://github.com/o0ragman0o/Withdrawable) ether payments API which implement:
+Where a contract cannot otherwise determine initization status, a dedicated
+boolean state variable should initialized to true and deleted upon successful
+initialization.
+
+* `bool __initFuse = true;`
+
+Additional interfaces that are used in the framework consist of the `Value`
+API and [`Withdrawable`](https://github.com/o0ragman0o/Withdrawable) ether
+payments API which implement:
 
 * `function value() public constant returns (uint)`
 * `function withdrawAll() public returns (bool)`
 
 ## Registrars
-*SandalStraps Registrars* are Ethereum Name Service (ENS) compilant resolvers
-which impliment the
-[EIP137](https://github.com/ethereum/EIPs/blob/master/EIPS/eip-137.md) `address`
-and `content` record interfaces to return the address and resource from a
-registered contract.
+*SandalStraps Registrars* are triple key lookup tables for contract
+registration. 
 
 Internally, Registrars store lookup data by `Name->Index` and `Index->Address`
 mappings with the `regName` being returned from the contract being looked up.
@@ -150,8 +154,9 @@ entered into the registrar of its factory's name.
 `SandalStraps` organization. Its primary purpose is to manage registrars,
 reserved names, provision product creation and collect and transfer fees.
 Proxying functionality allows it to arbitrarily own and call contracts and
-thereby hold value in value holding contracts such as ERC20 tokens. Only the
-owner is permissioned to used the `callAsContract()` function.
+thereby hold ownership of and/or value in value holding contracts such as
+ERC20 tokens. Only the owner is permissioned to used the `callAsContract()`
+function.
 
 A number of administrative names are reserved to which only the owner can
 register contracts of those names. While the owner can reserve any name, the
@@ -178,13 +183,13 @@ and may set it impossibly high to prevent 3rd parties registering factories.
 the [minimal `Withdrawable` API](https://github.com/o0ragman0o/Withdrawable)
 consisting of:
 
-* `function WithdrawAll()`
+* `function withdrawAll()`
 * `event Deposit(address _from, uint _value)`
 * `event Withdrawal(address _by, address _to, _value)`
 
 If a contract handles ether for multiple addresses, it SHOULD implement:
 
-* `function WithdrawAllFor(address[] _addrs)`
+* `function withdrawAllFor(address[] _addrs)`
 ___
 
 ## Fees and Fee Collection
@@ -273,7 +278,6 @@ are created by calling:
 will be registered in that registrar.
 ___
 # API's used by SandalStraps
-* [ENS](https://github.com/ethereum/EIPs/blob/master/EIPS/eip-137.md)
 * [Owned](https://github.com/o0ragman0o/Owned)
 * [RegBase](https://github.com/o0ragman0o/SandalStraps/blob/master/docs/RegBaseAPI.md)
 * [Registrar](https://github.com/o0ragman0o/SandalStraps/blob/master/docs/RegistrarAPI.md)

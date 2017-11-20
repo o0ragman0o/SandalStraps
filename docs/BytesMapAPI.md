@@ -33,6 +33,10 @@ caller who set it or by the `BytesMap` owner using its mapping key.
 
 `0x3952feb5` UUID_INTERFACE_ID
 
+Type descriptors are arbitrarily defined by the signature of their interface function, e.g.
+```
+0xcccac034 == bytes4(sha3("utf8(bytes32)"))
+```
 
 In addition to the `RegBase API`, a `SandalStraps` `BytesMap` contract
 exposes a minimum of the following functions:
@@ -63,7 +67,7 @@ Stores an owned byte array in the mapping keyed by a sha3 contatination of
 
 Returns bytes32 hash consisting of the first 4 byte being the descriptor with the remaing being the sha3 of the sender address and the bytes array
 
-### clear (by byte array)
+### clear
 ```
 function clear(bytes4 _type, bytes _bytes);
 ```
