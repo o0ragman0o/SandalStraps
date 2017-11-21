@@ -45,7 +45,11 @@ import "https://github.com/o0ragman0o/ReentryProtected/ReentryProtected.sol";
 import "./Registrar.sol";
 import "./Value.sol";
 
-contract SandalStraps is ReentryProtected, RegBase, Owning, WithdrawableMinItfc
+contract SandalStraps is
+    ReentryProtected,
+    RegBase,
+    OwningItfc,
+    WithdrawableMinItfc
 {
 //
 // Constants
@@ -485,19 +489,31 @@ contract SandalStraps is ReentryProtected, RegBase, Owning, WithdrawableMinItfc
     // Proxy functions to interact with contracts owned by the SandalStraps
     // Instance.
 
-    /// @notice Receive ownership of a contract at `_kAddr`
-    /// @param _kAddr The address of a contract transferring ownership
-    /// @return bool value indicating success
+    /// @notice Contract to recieve ownership of `_kAddr`
+    /// @param _kAddr An address of an `Owned` contract
     function receiveOwnershipOf(address _kAddr)
+         public
+         returns (bool)
+     {
+         require(OwnedAbstract(_kAddr).acceptOwnership());
+         ReceivedOwnership(_kAddr);
+         return true;
+     }
+
+    /// @notice Change the owner of the owned contract `_kAddr` to `_owner`
+    /// @param _kAddr The address of the owned contract
+    /// @param _owner The address of the new owner
+    /// @dev could be used to migrate to an upgraded SandalStraps
+    /// @return bool value indicating success
+    function changeOwnerOf(address _kAddr, address _owner)
         public
-        noReentry
+        onlyOwner
         returns (bool)
     {
-        require(RegBase(_kAddr).acceptOwnership());
-        ReceivedOwnership(_kAddr);
+        require(OwnedAbstract(_kAddr).changeOwner(_owner));
+        ChangeOwnerOf(_kAddr, _owner);
         return true;
     }
-
     /// @notice Change the resource of owned contract `_kAddr` to `_resource`
     /// @param _kAddr The address of the owned contract
     /// @param _resource The new resource value

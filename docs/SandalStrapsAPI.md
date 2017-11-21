@@ -8,6 +8,25 @@ Once it is deployed, two initialisation functions, `init1()`
 registrars `factories` and `registrar` 
 and register loopbacks for `metaRegistrar` and the `SandalStraps` instance.
 
+### Heritage
+```
+ReentryProtected <------------------.
+                                    |
+OwnedAbstract <- Owned <-.          |
+                         |          |
+RegBaseAbstract <--------+- RegBase +-.
+                                      |
+OwningInterface <-----------------------.
+                                        |
+WithdrawableMinItfc <-------------------+- SandalStraps
+
+
+OwnedAbstract <- Owned <-.
+                         |
+RegBaseAbstract <--------+- RegBase <- Factory <- SandalStrapsFactory
+```
+
+### ABI
 In addition to the `regBase` API, the `SandalStraps` kernel provides the
 following functions:
 

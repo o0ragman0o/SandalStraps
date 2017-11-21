@@ -5,6 +5,19 @@ owned strings in a `bytes32 => string` mapping.  This can be useful for storing
 msg.sender and the string.  A string can only be deleted by the
 caller who set it or by the `StingsMap` owner using its mapping key.
 
+### Heritage
+```
+OwnedAbstract <- Owned <-.
+                         |
+RegBaseAbstract <--------+- RegBase <- StringsMap
+
+
+OwnedAbstract <- Owned <-.
+                         |
+RegBaseAbstract <--------+- RegBase <- Factory <- StringsMapFactory
+```
+
+### ABI
 In addition to the `RegBase API`, a `SandalStraps` `StringMap` contract
 exposes a minimum of the following functions:
 

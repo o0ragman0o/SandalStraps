@@ -4,6 +4,19 @@ to be kept. For this purpose atomic store types may be wrapped in a compliant
 contract such as the `Value` contract.  Any simple type up to 32 bytes 
 (256 bits) can be cast into and out of this contract store:
 
+### Heritage
+```
+OwnedAbstract <- Owned <-.
+                         |
+RegBaseAbstract <--------+- RegBase <- Value
+
+
+OwnedAbstract <- Owned <-.
+                         |
+RegBaseAbstract <--------+- RegBase <- Factory <- ValueFactory
+```
+
+### ABI
 In addition to the `RegBase API`, a `SandalStraps` `Value` contract
 exposes a minimum of the following functions:
 

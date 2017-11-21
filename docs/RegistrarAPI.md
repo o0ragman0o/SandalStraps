@@ -4,6 +4,19 @@ A registrar is a triangular lookup data structure with keys of *contract address
 `kAddr` and `idx` are stored in mappings in the registrar while `regName` is
 referenced from the registered contract
 
+### Heritage
+```
+OwnedAbstract <- Owned <-.
+                         |
+RegBaseAbstract <--------+- RegBase <- Registrar
+
+
+OwnedAbstract <- Owned <-.
+                         |
+RegBaseAbstract <--------+- RegBase <- Factory <- RegistrarFactory
+```
+
+### ABI
 In addition to the `RegBase API`, a `SandalStraps` `Registrar` contract
 exposes a minimum of the following functions:
 
