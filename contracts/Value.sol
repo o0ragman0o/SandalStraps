@@ -2,7 +2,7 @@
 
 file:   Value.sol
 ver:    0.4.0
-updated:5-Nov-2017
+updated:26-Nov-2017
 author: Darryl Morris (o0ragman0o)
 email:  o0ragman0o AT gmail.com
 
@@ -22,9 +22,10 @@ See MIT Licence for further details.
 
 Release Notes
 -------------
-* Using Factory 0.3.4 for `withdrawAll()` instead of `withdraw(<value>)`
+* Using Factory 0.4.0 for `withdrawAll()` instead of `withdraw(<value>)`
 * changed from `fee` to `price`
 * pragma solidity 0.4.17 
+* added `decimals` and `function setDecimals(uint8)`
 
 \******************************************************************************/
 
@@ -35,7 +36,12 @@ import "./Factory.sol";
 contract Value is RegBase
 {
     bytes32 constant public VERSION = "Value v0.4.0";
+    
+    /// @return The current set value
     uint public value;
+    
+    /// @return The fix poitn decimal place
+    uint8 public decimals;
 
     function Value(address _creator, bytes32 _regName, address _owner)
         public
@@ -44,12 +50,27 @@ contract Value is RegBase
         // nothing to construct
     }
     
+    /// @notice Set the value to `_value`
+    /// @param _value An unsigned integer
+    /// @return Boolean success value
     function set(uint _value)
         public
         onlyOwner
         returns (bool)
     {
         value = _value;
+        return true;
+    }
+
+    /// @notice Set the decimal places to `_decimal`
+    /// @param _decimals A fixed point decimal place value
+    /// @return Boolean success value
+    function setDecimals(uint8 _decimals)
+        public
+        onlyOwner
+        returns (bool)
+    {
+        decimals = _decimals;
         return true;
     }
 }
