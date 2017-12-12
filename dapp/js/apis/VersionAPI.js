@@ -1,0 +1,2 @@
+VersionABI = [{"constant":true,"inputs":[],"name":"VERSION","outputs":[{"name":"","type":"bytes32"}],"payable":false,"stateMutability":"pure","type":"function"}];
+VersionContract = web3.eth.contract(VersionABI);

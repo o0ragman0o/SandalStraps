@@ -1,0 +1,165 @@
+/*@import "pure.css";*/
+
+html, body, .body {
+    margin: 0px;
+    padding: 0px;
+    height: 100%;
+}
+
+canvas {
+	border-radius: 100%;
+	/*border: 3px solid grey;*/
+}
+
+div {
+	display: inline-block;
+}
+
+h1 {
+	color: oldlace;
+}
+
+.header {
+	color: white;
+	background-color: black;
+	height: 64px;
+    padding: 15px;
+	font-family: sans-serif;
+	box-shadow: 0.5px 0.5px 5px grey;	
+}
+
+.body {
+    color: black;
+    background-color: oldlace;
+    padding: 15px;
+	font-size: 1.0rem;
+	font-family: sans-serif;
+}
+
+.footer {
+	position: absolute;
+	bottom: 0px;
+    background-color: black;
+    opacity: 0.8;
+    color: white;
+    padding: 15px;
+	font-size: 0.8rem;
+	font-family: sans-serif;
+	box-shadow: 0.5px 0.5px 5px grey;	
+}
+
+.column {
+    float: left;
+    padding: 15px;
+}
+
+.col-1 {
+	width: 8.3333%;
+}
+
+.col-2 {
+	width: 16.6666%;
+}
+
+.col-3 {
+	width: 25%;
+}
+
+.col-4 {
+	width: 33.3333%;
+}
+
+.col-6 {
+	width: 50%;
+}
+
+.col-12 {
+	width: 100%;
+}
+
+.tplt {
+	/*border: 1px solid grey;	*/
+	border-radius: 4px;
+	box-shadow: 0.5px 0.5px 5px grey;
+	padding: 6.5px 7.8px;
+}
+
+ul, ol,
+.ss-list {
+	list-style: none;
+}
+
+/* Folder tree */
+input + div + ul { display: none; }
+input:checked + div + ul { display: block; }
+
+input[type="checkbox"] + div { display: inline-block; }
+
+.mono,
+.ss-addr
+{
+	font-family: monospace;
+}
+
+.upper {
+	text-transform: uppercase;
+}
+
+select,
+ss-select
+{
+    background-color: oldlace;
+	border: 2px solid grey;
+}
+
+button,
+.ss-button,
+.ss-input,
+.ss-select
+{
+	border-radius: 4px;
+	border: 0;
+	padding: 6.5px 7.8px;
+	margin-bottom: 0.3rem;
+}
+
+.ss-addr,
+.ss-input,
+.ss-select
+{
+	display: block;
+	width: 23rem;
+	/*min-height: 1.5rem;*/
+}
+
+input,
+select,
+{
+	box-shadow: 0.5px 0.5px 5px grey inset;
+}
+
+input:hover,
+select:hover,
+input:focus,
+select:focus
+{
+	box-shadow: 0.5px 0.5px 2px grey;
+}
+
+button:hover,
+.ss-button:hover
+{
+	box-shadow: 0.5px 0.5px 5px grey;	
+}
+
+.ss-flex-container {
+	display: flex;
+	flex-wrap: wrap;
+	justify-content: space-around;
+	flex-direction: column;
+}
+
+.ss-flex {
+	display: inline-flex;
+}
+
