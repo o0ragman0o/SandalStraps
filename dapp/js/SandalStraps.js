@@ -1,111 +1,155 @@
 $import ("js/apis/SandalStrapsAPI.js");
 
-var alphaStrapsAddr = "0xC81eAd39FB82Cd54c819bb4cC542eD1Ac97b378A";
-// var alphaStrapsAddr = "0x4CfD8a09A3C88d20A5B166f86a9DfcB48eB464aF";
-var currStraps = {};
+const alphaStrapsAddr = "0xC81eAd39FB82Cd54c819bb4cC542eD1Ac97b378A";
+// const alphaStrapsAddr = "0x4CfD8a09A3C88d20A5B166f86a9DfcB48eB464aF";
+// var currStraps = {};
 
-sandalStraps = {
-	minimal: (kAddr) => {
-		return `
-		${regBase.minimal(kAddr)}
-		`
-	},
+const fromFactoryPrice = new Tilux({
+	w: `
+		<span id='{@id}'>: {@name} for &Xi; {@price}</span>
+	`,
+	f: {
+		name: "...",
+		price: '',
+	}
+})
 
-	basic: (kAddr) => {
-		return `
-		${regBase.basic(kAddr)}
-		`
-	},
+let newFromFactoryTplt = new Tilux({
+	w: `
+		<div id="{@id}">{>(@k(@kAddr))}</div>
+	`,
+	f: {
+		id: "from-factory",
+		kAddr: "",
+		k: (kAddr)=>{return getContractTplt(kAddr).minimal || nullTplt}
+	}
+})
 
-	advanced: (kAddr) => {
-		let k = SandalStrapsContract.at(kAddr);
-		let mr_a = k.metaRegistrar();
-		return `
-		${regBase.advanced(kAddr)}
-		${registrar.basic(mr_a)}
-		`		
+let registerKAddrTplt = new Tilux({
+	w: `
+		<div id="{@id}">{>(@k(@kAddr))}</div>
+	`,
+	f: {
+		id: "register-kAddr",
+		kAddr: "",
+		k: (kAddr)=>{return getContractTplt(kAddr).minimal || nullTplt}
+	}
+})
+
+function sandalStraps(kAddr){
+	const k = SandalStrapsContract.at(kAddr);
+	if(!k) return nullTplt;
+	const regName = utf8(k.regName());
+	const mr_a = k.metaRegistrar().toString();
+	const mr_k = RegistrarContract.at(mr_a);
+	const mr_n = [' '].concat(registrar.getNames(mr_k));
+	const fc_a = mr_k.addressByName("factories").toString();
+	const fc_k = RegistrarContract.at(fc_a);
+	const fc_n = [' '].concat(registrar.getNames(fc_k));
+	return {
+		minimal: new Tilux({
+			w: `
+				{>(@regBase)}
+			`,
+			f: {
+				kAddr: kAddr,
+				regName: regName, 
+				regBase: regBase(kAddr).minimal
+			}
+		}),
+	
+		basic: new Tilux({
+			w: `
+				{>(@regBase)}
+			`,
+			f: {
+				kAddr: kAddr,
+				regBase: regBase(kAddr).basic
+			}
+		}),
+	
+		advanced: new Tilux({
+			w: `
+			<div class="" id="{@id}">
+				{>(@regBase)}
+				<div class="layer">		
+					<h3>Create New{>(fromFactoryPrice)}</h3>
+					<div>
+						<select id="sel-factory" class="ss-input" placeholder="Product" onchange="{@getFactory}(event,'{@kAddr}')">
+							{#(['option'], @fc_n)}
+						</select>
+						<input class="ss-input" type="text" id="reg-name-{@kAddr}" placeholder="Contract Name"></input>
+						<input class="ss-input ss-addr" type="text" id="owner-addr-{@kAddr}" placeholder="Owner Address"></input>
+						<button onclick="(e)=>{create(e, k);}">Create</button>
+						{>(newFromFactoryTplt)}
+					</div>
+		
+					<h3>Add Factory</h3>
+					<div>
+						<input class="ss-input ss-addr" id="add-fact-{@kAddr}" onchange="" placeholder="Factory Address"></input>
+						<button onclick="{@addFactory}">Add Factory</button>
+						<div id="add-factory"></div>
+					</div>
+		
+					<h3>Register Contract In...</h3>
+					<div>
+						<div id="reg-k"></div>
+						<select class="ss-input" onchange="{@getRegistrar}(event,'{@kAddr}')">
+							{#(['option'], @mr_n)}
+						</select>
+						<input class="ss-input ss-addr" id="reg-k-{@kAddr}" onchange="" placeholder="Contract Address"></input>
+						<button onclick="(e)=>{@registerK}">Register</button>
+						<div id="k-to-reg"></div>
+						<div id="register-kAddr"></div>
+					</div>
+				</div>
+				{>(@metaReg)}
+			</div>
+			`,
+			f: {
+				id: `sandalstraps-${kAddr}`,
+				kAddr: kAddr,
+				k: k,
+				regBase: regBase(kAddr).advanced,
+				metaReg: regBase(mr_a).minimal,
+				mr_a: mr_a,
+				mr_k: mr_k,
+				mr_n: mr_n,
+				fc_a: fc_a,
+				fc_k: fc_k,
+				fc_n: fc_n,
+				getFactory: "sandalStraps.getFactory",
+				getRegistrar: "sandalStraps.getRegistrar",
+	
+				addFactory: (e, k) => {
+					k.addFactory(e.target.value);
+				},
+	
+				registerK: (e, k) => {
+	
+				},
+	
+				inpChange: (e) => {
+					Tilux.render('#k-to-reg', regBase(e.target.value).basic);
+				},
+			},
+		})
 	}
 }
 
-function sandalStrapsTplt(kAddr) {
-
+sandalStraps.getFactory = function(event, kAddr){
+	let fName = event.target.value;
 	let k = SandalStrapsContract.at(kAddr);
-	let mr_a = k.metaRegistrar();
-	let mr_k = RegistrarContract.at(mr_a);
-	let mr_n = getNames(mr_k);
-	let fc_a = mr_k.addressByName("factories");
-	let fc_k = RegistrarContract.at(fc_a);
-	let fc_n = getNames(fc_k);
-
-	return `
-	<div class="tplt" id="sandalstraps-${kAddr}">
-		${regBase.basic(kAddr)}
-		<button class="ss-button" onclick="goAddr('${mr_a}')">
-			MetaRegistrar<br>
-			<span class="ss-addr">${shortAddr(mr_a)}</span>
-		</button>
-
-		<h3>Create New...</h3>
-		<div>
-			<select class="ss-input" onchange="getFactory(event)">
-				${$list('option', fc_n)}
-			</select>
-			<div id="sel-factory"></div>
-			<input class="ss-input" type="text" id="reg-name-${kAddr}" placeholder="Contract Name"></input>
-			<input class="ss-input ss-addr" type="text" id="owner-addr-${kAddr}" placeholder="Owner Address"></input>
-			<button onclick="(e)=>{create(e, k);}">Create</button> Price <span id="create-price"></span> &Xi;
-		</div>
-
-		<h3>Add Factory</h3>
-		<div>
-			<input class="ss-input ss-addr" id="add-fact-${kAddr}" onchange="(e,'add-factory')=>{Factory(event)}" placeholder="Factory Address"></input>
-			<div id="add-factory"></div>
-			<button onclick="(e)=>{addFactory(e,${k})}">Add Factory</button>
-		</div>
-
-		<h3>Register Contract In...</h3>
-		<div>
-			<select class="ss-input" onchange="getRegistrar(event)">
-				${$list('option', mr_n)}
-			</select>
-			<div id="reg-k"></div>
-			<input class="ss-input ss-addr" id="reg-k-${kAddr}" onchange="(e)=>{$t('k-to-reg', regBaseTplt(e.target.value))}" placeholder="Contract Address"></input>
-			<div id="k-to-reg"></div>
-			<button onclick="(e)=>{registerK(e,${k})}">Register</button>
-		</div>
-	</div>
-	`;
+	newFromFactoryTplt.f.kAddr = k.addressByNameFrom('factories', fName);
+	fromFactoryPrice.f.name = fName;
+	fromFactoryPrice.f.price = k.getProductPrice(fName);
 }
 
-function changeStraps(kAddr) {
-	if (web3.isAddress(kAddr))
-		currStraps = SandalStrapsContract.at(kAddr);
-}(alphaStrapsAddr);
-
-function addFactory(e, k) {
-	k.addFactory(e.target.value);
+sandalStraps.getRegistrar = function(event, kAddr){
+	let fName = event.target.value;
+	let k = SandalStrapsContract.at(kAddr);
+	registerKAddrTplt.f.kAddr = k.addressByNameFrom('metaregistrar', fName);
 }
 
-function registerK(e, k) {
 
-}
 
-function getRegistrar(e) {
-	rg_n = e.target.value;
-	rg_a = currStraps.addressByNameFrom("registrars", rg_n);
-	$t("reg-k",regBaseTplt(rg_a));
-}
-
-function getFactory(e) {
-	fc_n = e.target.value;
-	fc_a = currStraps.addressByNameFrom("factories", fc_n);
-	$t("sel-factory",regBaseTplt(fc_a));
-	price = currStraps.getProductPrice(fc_n);
-	$t("create-price",price);
-}
-
-function getRegBase(e, kAddr) {
-	div = $id("sel-factory");
-	fa = currStraps.addressByNameFrom("factories", e.target.value);
-	div.innerHTML = regBaseTplt(fa);
-}

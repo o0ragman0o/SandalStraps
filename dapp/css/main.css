@@ -4,6 +4,7 @@ html, body, .body {
     margin: 0px;
     padding: 0px;
     height: 100%;
+    overflow: hidden;
 }
 
 canvas {
@@ -24,7 +25,7 @@ h1 {
 	background-color: black;
 	height: 64px;
     padding: 15px;
-	font-family: sans-serif;
+	font-family: Roboto, sans-serif;
 	box-shadow: 0.5px 0.5px 5px grey;	
 }
 
@@ -33,7 +34,7 @@ h1 {
     background-color: oldlace;
     padding: 15px;
 	font-size: 1.0rem;
-	font-family: sans-serif;
+	font-family: Roboto, sans-serif;
 }
 
 .footer {
@@ -44,7 +45,7 @@ h1 {
     color: white;
     padding: 15px;
 	font-size: 0.8rem;
-	font-family: sans-serif;
+	font-family: Roboto, sans-serif;
 	box-shadow: 0.5px 0.5px 5px grey;	
 }
 
@@ -99,6 +100,8 @@ input[type="checkbox"] + div { display: inline-block; }
 .ss-addr
 {
 	font-family: monospace;
+    overflow: hidden;
+    width: 100%;
 }
 
 .upper {
@@ -106,6 +109,7 @@ input[type="checkbox"] + div { display: inline-block; }
 }
 
 select,
+option,
 ss-select
 {
     background-color: oldlace;
@@ -117,10 +121,12 @@ button,
 .ss-input,
 .ss-select
 {
+	cursor: pointer;
 	border-radius: 4px;
 	border: 0;
 	padding: 6.5px 7.8px;
-	margin-bottom: 0.3rem;
+	margin: 9px;
+    background-color: rgba(0,0,0,0.2);
 }
 
 .ss-addr,
@@ -128,7 +134,7 @@ button,
 .ss-select
 {
 	display: block;
-	width: 23rem;
+	/*width: 23rem;*/
 	/*min-height: 1.5rem;*/
 }
 
@@ -163,3 +169,16 @@ button:hover,
 	display: inline-flex;
 }
 
+.idicon,
+.idicon-sml {
+	display: inline-block;
+	border-width: 2.2px;
+	border-color: white;
+	border-style: solid;
+	border-radius: 100%;
+	box-shadow: 0.5px 0.5px 5px grey;
+}
+
+.idicon-sml {
+	border-width: 1.6px;
+}

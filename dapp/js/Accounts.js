@@ -1,15 +1,22 @@
 
-function accountsTplt() {
-	return `
-	<div>
-		<select id="accounts" class="ss-input ss-addr" onchange="ethBal(event)">
-			${$list('option', accounts())}
+const accountsTplt = new Tilux({
+	w:`
+		{>(accBalTplt)}
+		<select id="accounts" class="ss-input ss-addr" onchange="{@evEthBal}(event)">
+			{#(['option'], @accounts)}
 		</select>
-		<label id="ethBal"></label>
-	</div>
-	`
-}
+	`,
+	f: {
+		id:"accounts",
+		accounts: accounts(),
+		evEthBal: 'accountsTplt.f.ethBal',
 
-function ethBal(event) {
-	$id("ethBal").innerText = balance(event.target.value);
-}
+		ethBal: (event)=>{
+			let addr = event.target.value;
+			if (!addr) return;
+			setAccount(addr);
+			accBalTplt.f.balance = balance(addr);
+		},
+	}
+})
+
