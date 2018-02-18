@@ -127,3 +127,5 @@
 	}
 
 })();
+
+console.log("ran blockies.js");

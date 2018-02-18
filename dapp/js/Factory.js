@@ -1,58 +1,59 @@
-$import ("js/apis/FactoryAPI.js");
+// $import ("js/apis/FactoryAPI.js");
 
-const factory = (kAddr) => {
-	const k = FactoryContract.at(kAddr);
-	const v = web3.fromWei(k.value()).toNumber();
-	return{ 
-		minimal: new Tilux({
-			w: `
-				{>(@regBase)}
+const factory = {
+	minimal: (k) => {
+		return {
+			w: `{>(regBase.minimal(@k))}`,
+			f: {
+				k: k,
+			}
+		}
+	},
+	
+	basic: (k) => {
+		return {
+			w: `<div id="{$@id}">
+				{>(regBase.basic(@k))}
+				<div>Price <i class="fab fa-fw fa-ethereum"></i>{$@price}</div>
+				</div>
 			`,
 			f: {
-				regBase: regBase(kAddr).minimal,
-			}
-		}),
-	
-		basic: new Tilux({
-			w: `
-				{>(@regBase)}
-				<div>Price {@price}&Xi;</div>
-			`,
-			f: {
-				regBase: regBase(kAddr).basic,
-				price: v,
-			}
-		}),
-	
-		advanced: new Tilux({
-			w: `
-			<div class="tplt" id="factory-${kAddr}">
-				{>(@regBase)}
-					<h2>Create a '{@regBase.f.regName}' contract for ${v}&Xi;</h2>
-					<div>
-						<input class="ss-input" type="text" id="reg-name-${kAddr}" placeholder="New Contract Name"></input>
-						<input class="ss-input ss-addr" type="text" id="owner-addr-${kAddr}" placeholder="Owner Address"></input>
-						<button onclick="(e)=>{create(e, k);}">Create</button>
-					</div>
-					<p>* Note: Contracts created directly by a factory are not registered in a registrar
-					</p>
+				k: k,
+				id: `factory-${k.address}-bas`,
+				price: toEther(k.value()),
+			},
+		}
+	},
+
+	advanced: (k) => {
+		return {
+			w: `<div id="{$@id}">
+				{>(regBase.advanced(@k))}
+				<div class="layer" id="{$@id}">
+						<h2>Create a {$@regName} contract for <i class="fab fa-fw fa-ethereum"></i>{$@price}</h2>
+						<div>
+							<input class="ss-input" type="text" placeholder="New Contract Name" onchange="{$@prodName} = this.value"></input>
+							<input class="ss-input ss-addr" type="text" placeholder="Owner Address" value="{$@forOwner}" onchange="{$@forOwner} = this.value"></input>
+							<button onclick="{$@create}({$@kAddr}, {$@prodName}, {$@forOwner})">Create</button>
+						</div>
+						<p>* Note: Contracts created directly by a factory are not registered in a registrar
+						</p>
+						<p>* If owner address is not given, the contract owner defaults to the creating accounts address
+						</p>
+				</div>
 			</div>`,
 			f: {
-				regBase: regBase(kAddr).advanced,
-				price: v,
-			}
-
-		}),
-	
-		create: (e, k) => {
-			const rn = $id("reg-name-"+ k.address).value;
-			const o = $id("owner-addr-"+ k.address).value;
-			if(!web3.isAddress(o)) return;
-			k.create(rn, o);
-		},
-	
-		price: (k) => {
-			return web3.fromWei(k.value()).toNumber();
+				id: `factory-${k.address}-adv`,
+				k: k,
+				kAddr: k.address,
+				regName: utf8(k.regName()),
+				price: toEther(k.value()),
+				prodName: '',
+				forOwner: currAccountLux.value,
+				create: (kAddr, name, owner) => {contracts[kAddr].createNew(name, owner)}
+			},
 		}
-	}
+	},
 }
+
+console.log("ran Factory.js");

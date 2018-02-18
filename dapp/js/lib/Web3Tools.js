@@ -15,6 +15,10 @@ function balance(addr) {
 	return web3.fromWei(web3.eth.getBalance(addr)).toFormat(3);
 }
 
+function toEther(num) {
+    return web3.fromWei(num).toFormat(3);
+}
+
 function setAccount(acc) {
     currAccount = acc;
 }
@@ -95,3 +99,5 @@ function txrReport(receipt) {
 
 web3Connect();
 currAccount = accounts()[0];
+
+console.log("ran Web3Tools.js");

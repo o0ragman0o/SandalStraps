@@ -1,302 +1,386 @@
-var hue = new Lux(270);
+var hue = new Lux(200);
 var sat = new Lux(100);
 var lit = new Lux(81);
 
 var ss_style = new Tilux({
 		f: {
 			id: 'ss-style',
-			darkest: `hsl(${hue.value}, ${sat.value + (100 - sat.value) * 0.1}%, ${lit.value * 0.3}%)`,
-			dark: `hsl(${hue.value}, ${sat.value + (100 - sat.value) * 0.05}%, ${lit.value * 0.7}%)`,
-			base: `hsl(${hue.value}, ${sat.value}%, ${lit.value}%)`,
-			light: `hsl(${hue.value}, ${sat.value - sat.value * 0.05}%, ${lit.value + (100 - lit.value) * 0.3}%)`,
-			lightest: `hsl(${hue.value}, ${sat.value - sat.value * 0.1}%, ${lit.value + (100 - lit.value) * 0.9}%)`,
+			darkest: ()=>{return  `hsl(${hue.value}, ${sat.value + (100 - sat.value) * 0.1}%, ${lit.value * 0.3}%)`},
+			dark: ()=>{return  `hsl(${hue.value}, ${sat.value + (100 - sat.value) * 0.05}%, ${lit.value * 0.7}%)`},
+			base: ()=>{return `hsl(${hue.value}, ${sat.value}%, ${lit.value}%)`},
+			light: ()=>{return  `hsl(${hue.value}, ${sat.value - sat.value * 0.05}%, ${lit.value + (100 - lit.value) * 0.3}%)`},
+			lightest: ()=>{return  `hsl(${hue.value}, ${sat.value - sat.value * 0.1}%, ${lit.value + (100 - lit.value) * 0.9}%)`},
+			compliment: ()=>{return  `hsl(${(hue.value + 180) % 360}, ${sat.value}%, ${lit.value}%)`},
 			trans: `0.20s`,
 		},
 
 		w: `
-		html, body, .body {
-		    margin: 0px;
-		    padding: 0px;
-		    height: 100%;
-		    font-size: 16px;
-		    /* overflow: scroll; */
-		}
+		<style id="{$@id}">
 
-		div {
-		    transition-duration: {@trans};
-		}
+			* {
+				box-sizing: border-box;
+			}
 
-		h1 {
-			color: {@baseColor};
-		}
+			html {
+			    height: 100%;
+			}
 
-		.container {
-			display: grid;
-			grid-template-rows: 64px 32px auto 64px;
-			grid-template-columns: 1fr 1fr 1fr;
-			grid-template-areas:
-				"title accounts accounts"
-				"path path path"
-				"body body body"
-				"footer footer footer"
-		}
+			body, .body {
+			    margin: 0px;
+			    padding: 0px;
+			    font-size: 16px;
+				font-family: Roboto, sans-serif;
+				min-height: 100%;
+			    transition-duration: {$@trans};
+			}
 
-		.item {
 
-		}
+			div {
+			}
 
-		.header {
-			grid-area: title;
-			color: {@lightest};
-			background-color: {@darkest};
-			font-family: Roboto, sans-serif;
-		}
+			h1 {
+				color: {$@base()};
+			}
 
-		.accounts {
-			grid-area: accounts;
-			background-color: {@darkest};
-		}
+			h3 {
+				font-weight: 300;
+			}
 
-		.navpath {
-			grid-area: path;
-			font-size: 1em;
-			color: {@darkest};
-			background-color: {@base};
-			font-family: Roboto, sans-serif;
-			text-transform: uppercase;
-			box-shadow: 0px 1px 5px -1px {@darkest} inset;				
-		}
+			.container {
+				display: grid;
+				min-height: 100%;
+				grid-template-rows: 64px 32px auto 64px;
+				grid-template-columns: 1fr auto;
+				grid-template-areas:
+					"banner accounts accounts"
+					"path path path"
+					"contract contract contract"
+					"footer footer footer"
+			}
 
-		.path-item {
-			display: inline-block;
-			padding: 8px;
-			cursor: pointer;
+			.item {
 
-		}
-		.path-item:hover {
-			color: {@lightest};
-			background-color: {@base};
-			box-shadow: 0px 1.5px 5px {@darkest};				
-		}
+			}
 
-		.path-item:active, path-item + .active {
-			color: {@lightest};
-			background-color: {@light};
-			box-shadow: 0px 1.5px 5px {@darkest};				
-		}
+			.banner {
+				grid-area: banner;
+				color: {$@lightest()};
+				background-color: {$@darkest()};
+			}
 
-		.path-item:checked {
-			color: {@lightest};
-			background-color: {@light};
-			box-shadow: 0px 1.5px 5px {@darkest};				
-		}
+			.accounts {
+				grid-area: accounts;
+				color: {$@lightest()};
+				background-color: {$@darkest()};
+			}
 
-		.body {
-			grid-area: body;
-		    color: {@darkest};
-		    background-color: {@light};
-			font-size: 1.0em;
-			font-family: Roboto, sans-serif;
-		}
+			.navpath {
+				grid-area: path;
+				font-size: 1em;
+				color: {$@darkest()};
+				background-color: {$@compliment()};
+				text-transform: uppercase;
+				box-shadow: 0px 1px 5px -1px {$@darkest()} inset;				
+			}
 
-		.footer {
-			grid-area: footer;
-			// position: absolute;
-			// bottom: 0px;
-		    background-color: {@darkest};
-		    color: {@lightest};
-		    padding: 15px;
-			font-size: 0.8rem;
-			font-family: Roboto, sans-serif;
-			box-shadow: 0px -0.5px 5px {@darkest};	
-		}
+			.contract {
+				grid-area: contract;
+			    color: {$@darkest()};
+			    background-color: {$@light()};
+				// border-bottom: 6px solid {$@compliment()};
+			    min-height: 100%;
+				font-size: 1.0em;
+			}
 
-		.regbase-adv {
-			display: grid;
-			margin: 16px;
-			grid-template-rows: 1.6em 1.2em 1.2em 1.2em;
-			grid-template-columns: 70px auto;
-			grid-template-areas:
-				"idicon title"
-				"idicon addr"
-				"idicon owner"
-				"idicon bal"			
-		}
+			.footer {
+				grid-area: footer;
+				display: grid;
+				color: {$@lightest()};
+				background-color: {$@darkest()};
+				grid-template-rows: auto;
+				grid-template-columns: auto auto auto;
+				grid-template-areas:
+					"net mid soclinks"
+			}
 
-		.rb-idicon {
-			grid-area: idicon;
-		}
+			.net {
+				grid-area: net;
+				font-size: 0.8rem;
+			}
 
-		.rb-title {
-			grid-area: title;
-		}
+			.soc {
+				grid-area: soclinks;
+				font-size: 1.6rem;
+			}
+			
+			.path-item {
+				display: inline-block;
+				padding: 8px;
+				cursor: pointer;
 
-		.rb-regname {
-			color: {@lightest};
-			font-size: 1.4em;
-			text-transform: uppercase;
-		}
+			}
+			.path-item:hover {
+				color: {$@lightest()};
+				background-color: {$@base()};
+				box-shadow: 0px 1.5px 5px {$@darkest()};				
+			}
 
-		.rb-version {
-			justify-self: end;
-			font-size: 1.2em;
-		}
+			.path-item + .active {
+				color: {$@darkest()};
+				background-color: {$@light()};
+				box-shadow: 0px 1.5px 5px {$@darkest()};
+				text-shadow: 0.5px 0.5px 2px {$@lightest()};				
+			}
 
-		.rb-addr {
-			grid-area: addr;
-		}
+			.path-item:checked {
+				color: {$@lightest()};
+				background-color: {$@light()};
+				box-shadow: 0px 1.5px 5px {$@darkest()};				
+			}
 
-		.rb-owner {
-			grid-area: owner;
-		}
+			a:link {
+				text-decoration: none;
+				// color: {$@dark};
+			}
 
-		.rb-bal {
-			grid-area: bal;
-		}
+			a:hover {
+				text-shadow: 0px 0px 2px {$@base()};	
+			}
 
-		.layer {
-			box-shadow: 0px 1.5px 5px {@darkest};				
-			padding: 13px 15.6px;
-		}
+			a:active {
 
-		.inline {
-			display: inline-block;
-		}
+			}
 
-		.darkest {
-			color: {@darkest};
-		}
+			.regbase-adv {
+				display: grid;
+				margin: 16px;
+				grid-template-rows: 1.6em 1.2em 1.2em auto;
+				grid-template-columns: 70px 350px auto;
+				grid-template-areas:
+					"idicon title title"
+					"idicon addr bal"
+					"idicon owner bal"
+					"ext ext ext"
+			}
 
-		.dark {
-			color: {@darkest};
-		}
+			.acc-bal {
 
-		.base {
-			color: {@base};
-		}
+			}
 
-		.light {
-			color: {@light};
-		}
+			.rb-idicon {
+				grid-area: idicon;
+			}
 
-		.lightest {
-			color: {@lightest};
-		}
+			.rb-title {
+				grid-area: title;
+			}
 
-		ul, ol,
-		.ss-list {
-			list-style: none;
-		}
+			.rb-regname {
+				color: {$@darkest()};
+				font-size: 1.4em;
+				text-transform: uppercase;
+				text-shadow: 0.5px 0.5px 2px {$@dark()};			
+			}
 
-		.mono,
-		.ss-addr
-		{
-			font-family: monospace;
-		}
+			.rb-regname-sml {
+				color: {$@darkest()};
+				font-size: 1.0em;
+				text-transform: uppercase;
+				text-shadow: 0.5px 0.5px 2px {$@dark()};			
+			}
 
-		.upper {
-			text-transform: uppercase;
-		}
+			.rb-version {
+				justify-self: end;
+				font-size: 1.2em;
+			}
 
-		select,
-		option,
-		ss-select
-		{
-			color: {@darkest};
-		    background-color: {@light};
-		    transition-duration: {@trans};
-		}
+			.rb-version-sml {
+				justify-self: end;
+				font-size: 0.8em;
+			}
 
-		button,
-		input,
-		.ss-button,
-		.ss-input,
-		.ss-select
-		{
-			cursor: pointer;
-			border-radius: 4px;
-			border-color: {@lightest};
-			border-width: 1.4px;
-			border-style: solid;
-			background-color: {@light};
-			padding: 13px 15.6px;
-			margin: 9px;
-		    transition-duration: 0.3s;
-		}
+			.rb-addr {
+				grid-area: addr;
+			}
 
-		button,
-		.ss-button
-		{
-			color: {@darkest};
-			text-transform: uppercase;
-		}
+			.rb-owner {
+				grid-area: owner;
+			}
 
-		.ss-input,
-		.ss-select
-		{
-			display: inline-block;
-		}
+			.rb-bal {
+				grid-area: bal;
+				font-size: 1.6em;
+			}
 
-		input,
-		select,
-		textarea
-		{
-			color: {@darkest};
-			background-color: {@light};
-			box-shadow: 0.5px 0.5px 5px {@darkest} inset;
-		}
+			.rb-ext {
+				grid-area: ext;
+			}
 
-		input:hover,
-		select:hover,
-		textarea:hover,
-		input:focus,
-		select:focus
-		{
-			border-color: {@light};
-			border-width: 1.4px;
-			border-style: solid;
-			background-color: {@base};
-			box-shadow: 0.5px 0.5px 2px {@darkest} inset;
-		}
+			.layer {
+				border-width: 0 0 4px 0;
+				border-style: solid;
+				border-color: {$@compliment()};
+				// border: 4px solid {$@compliment()};
+				box-shadow: 0px 3px 5px -1.5px {$@darkest()};				
+				padding: 13px 15.6px;
+			}
 
-		button:hover,
-		.ss-button:hover
-		{
-			border-color: {@light};
-		    background-color: {@base};
-			box-shadow: 0.5px 0.5px 5px {@darkest};	
-		}
+			.inline {
+				display: inline-block;
+			}
 
-		.ss-flex-container {
-			display: flex;
-			flex-wrap: wrap;
-			justify-content: space-around;
-			flex-direction: column;
-		}
+			.darkest {
+				color: {$@darkest()};
+			}
 
-		.ss-flex {
-			display: inline-flex;
-		}
+			.dark {
+				color: {$@darkest()};
+			}
 
-		.idicon,
-		.idicon-sml {
-			display: inline-block;
-			border-width: 2.2px;
-			border-color: {@lightest};
-			border-style: solid;
-			border-radius: 100%;
-			width: auto;
-		}
+			.base {
+				color: {$@base()};
+			}
 
-		.idicon-sml {
-			border-width: 1.6px;
-		}
+			.light {
+				color: {$@light()};
+			}
 
-		button + input,
-		select + input
-		{
-			display: inline-block;
-		}
+			.lightest {
+				color: {$@lightest()};
+			}
+
+			.compliment {
+				color: {$@compliment()};
+			}
+
+			ul, ol,
+			.ss-list {
+				list-style: none;
+			}
+
+			.mono,
+			.ss-addr
+			{
+				font-family: monospace;
+			}
+
+			.ss-addr {
+				font-size: 0.8em;
+			}
+
+			.upper {
+				text-transform: uppercase;
+			}
+
+			select,
+			option,
+			ss-select
+			{
+				color: {$@darkest()};
+			    background-color: {$@light()};
+			    transition-duration: {$@trans};
+			}
+
+			button,
+			input,
+			.ss-button,
+			.ss-input,
+			.ss-select
+			{
+				cursor: pointer;
+				border-radius: 4px;
+				border-color: {$@lightest()};
+				border-width: 1.4px;
+				border-style: solid;
+				background-color: {$@light()};
+				padding: 13px 15.6px;
+				margin: 9px;
+			    transition-duration: 0.3s;
+			}
+
+			button,
+			.ss-button
+			{
+				color: {$@darkest()};
+				text-transform: uppercase;
+			}
+
+			.ss-input,
+			.ss-select
+			{
+				display: inline-block;
+			}
+
+			input,
+			select,
+			textarea
+			{
+				color: {$@darkest()};
+				background-color: {$@light()};
+				box-shadow: 0.5px 0.5px 5px {$@darkest()} inset;
+				width: 300px
+			}
+
+			input:hover,
+			select:hover,
+			textarea:hover,
+			input:focus,
+			select:focus
+			{
+				border-color: {$@light()};
+				border-width: 1.4px;
+				border-style: solid;
+				background-color: {$@base()};
+				box-shadow: 0.5px 0.5px 2px {$@darkest()} inset;
+			}
+
+			button:hover,
+			.ss-button:hover
+			{
+				border-color: {$@light()};
+			    background-color: {$@base()};
+				box-shadow: 0.5px 0.5px 5px {$@darkest()};	
+			}
+
+			.ss-flex-container {
+				display: flex;
+				flex-wrap: wrap;
+				justify-content: space-around;
+				flex-direction: column;
+			}
+
+			.ss-flex {
+				display: inline-flex;
+			}
+
+			.idicon,
+			.idicon-sml {
+				display: inline-block;
+				border-width: 2.2px;
+				border-color: {$@lightest()};
+				border-style: solid;
+				border-radius: 100%;
+				width: auto;
+			}
+
+			.idicon-sml {
+				border-width: 1.6px;
+			}
+
+			button + input,
+			select + input
+			{
+				display: inline-block;
+			}
+
+			.kaddr:before {
+				font-family: FontAwesome;
+				
+			}
+		</style>
 		`,
 	}
 )
+
+
+console.log("ran style.js");

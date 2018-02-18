@@ -1,6 +1,6 @@
-// $import ("js/apis/MeteredPaymentsAPI.js");
+// $import ("js/apis/PayableERC20API.js");
 
-const meteredPayments = {
+const payableErc20 = {
 
 	minimal: (k) => {
 		return {
@@ -37,6 +37,4 @@ const meteredPayments = {
 	}
 }
 
-
-console.log("ran MeteredPayments.js");
-
+console.log("ran PayableERC20.js");

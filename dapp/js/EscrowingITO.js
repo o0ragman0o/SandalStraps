@@ -1,6 +1,6 @@
-// $import ("js/apis/MeteredPaymentsAPI.js");
+// $import ("js/apis/EscrowingITOAPI.js");
 
-const meteredPayments = {
+const escrowingITO = {
 
 	minimal: (k) => {
 		return {
@@ -37,6 +37,4 @@ const meteredPayments = {
 	}
 }
 
-
-console.log("ran MeteredPayments.js");
-
+console.log("ran escrowingITO.js");

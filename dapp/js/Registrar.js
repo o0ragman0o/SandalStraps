@@ -1,56 +1,78 @@
-$import ("js/apis/RegistrarAPI.js");
+// $import ("js/apis/RegistrarAPI.js");
 
-function registrar(kAddr){
-	let k = RegistrarContract.at(kAddr);
-	let addresses = registrar.getAddrs(k);
+const registrar = {
 
-	return {
-		minimal: new Tilux({
-			w: `{>(regBase(@kAddr).minimal)}`,
+	minimal: (k) => {
+		return {
+			w: `{>(regBase.minimal(@k))}`,
 			f: {
-				kAddr: kAddr,
-			}
-		}),
-	
-		basic: new Tilux({
+				k: k,
+			},
+		}
+	},
+
+	basic: (k) => {
+		return {
 			w: `
-				<div class="ss-flex-container" id="{@id}">
-					<input type="checkbox"/>
-					{>(regBase(@kAddr).basic)}
-					<ul>{#(['li'], @addresses)}</ul>
+				<div class="" id="{$@id}">
+					{>(regBase.basic(@k))}
+					<input type="checkbox" />
+					<ul>{#(['li'], @registered)}</ul>
 				</div>
 			`,
 			f: {
-				kAddr: kAddr,
-				id: `registrar-${kAddr}-bas`,
-				addresses: addresses.map(addr=>{return Tilux.l(regBase(addr).minimal)}),
+				id: `registrar-${k.address}-bas`,
+				k: k,
+				registered: () => {
+					var seen = new WeakSet();
+					return registrar.getRegistered(k).map(addr=>{
+						if (!seen.has(addr)) return kCandles[addr].minimal;
+					})
+				},
 			}
-		}),
-	
-		advanced: new Tilux({
+		}
+	},
+
+	advanced: (k) => {
+		let self = new Tilux({
 			w: `
-				<div class="" id="registrar-{@id}-adv">
-					{>(regBase(@kAddr).advanced)}
-					<div>
-						<input class="ss-input ss-addr" id="register-{@kAddr}" onchange="" placeholder="Contract Address"></input>
-						<button onclick="{@register}">Register Contract</button>
+				<div class="" id="{$@id}">
+					{>(regBase.advanced(@k))}
+					<div class="layer">
+						<input id="register-inp" class="ss-input ss-addr" placeholder="Contract Address"></input>
+						<button id="register-btn">Register Contract</button>
 					</div>
-					<div class="kTable">
-					{#([''], @addresses)}
+					<div class="layer">
+					{#([''], @registered())}
 					</div>
 				</div>
 			`,
 			f: {
-				kAddr: kAddr,
-				id: `registrar-${kAddr}-adv`,
-				addresses: addresses.map(addr=>{return Tilux.l(regBase(addr).basic)}),
+				id: `registrar-${k.address}-adv`,
+				k: k,
+				rAddr: '',
+				registered: () => {
+					return registrar.getRegistered(k).map(addr=>Tilux.l(kCandles[addr].minimal));
+				},
+			},
+			s: {
+				"#register-btn": {
+					"click": () => {self.f.k.register(self.f.rAddr,{from: currAccount, gas: 100000});},
+				},
+				"#register-inp": {
+					"change": (event) => {self.f.rAddr = event.target.value;},
+				}
 			}
-		}),
+		})
+		return self;
+	},
+
+	events: (k) => {
+
 	}
 }
 
-
-registrar.getAddrs = function(k) {
+registrar.getRegistered = function(k) {
 	let i = 1;
 	let s = k.size().toNumber();
 	var r = [];
@@ -71,5 +93,7 @@ registrar.getNames = function(k) {
 }
 
 registrar.register = function(k, rAddr) {
-	k.register(rAddr,{from: currAccount, gas: 100000})
 }
+
+console.log("ran Registrar.js");
+
