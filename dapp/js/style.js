@@ -321,6 +321,12 @@ var ss_style = new Tilux({
 				width: 300px
 			}
 
+			textarea
+			{
+				width: 90%;
+				min-height: 5rem;
+			}
+
 			input:hover,
 			select:hover,
 			textarea:hover,
@@ -373,14 +379,28 @@ var ss_style = new Tilux({
 				display: inline-block;
 			}
 
-			.kaddr:before {
-				font-family: FontAwesome;
-				
+			.modal {
+				position: fixed;
+				display: none;
+				z-index: 1;
+				top: 0;
+				left: 0;
+				width: 100%;
+				height: 100%;
+				background-color: rgba(0,0,0,0.4);
+			}
+
+			.modal-content {
+				font-size: 1.4em;
+				color: {$@darkest()};
+				background-color:{$@lightest()};
+				margin: 15%;
+				padding: 20px;
+				width: 75%;
 			}
 		</style>
 		`,
 	}
 )
-
 
 console.log("ran style.js");

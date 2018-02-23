@@ -26,11 +26,16 @@ const payableErc20 = {
 		var self = new Tilux({
 			w: `<div id="{$@id}>"
 					{>(regBase.advanced(@k))}
-					<div>
+					<div class="layer">
+						<h2><i class="fab fa-fw fa-ethereum"></i> {$@ethBal}</h2>
+						{>(erc20Form(@k))}
 					</div>
 				</div>`,
 			f: {
 				k: k,
+				supply: k.totalSupply().toNumber(),
+				ethBal: toEther(k.etherBalanceOf(currAccountLux.address)),
+				tokBal: k.balanceOf(currAccountLux.address).div(10**k.decimals().toNumber()),
 			}
 		});
 		return self;

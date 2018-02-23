@@ -28,8 +28,9 @@ const depositWithdrawAll = {
 			w: `<div id="{$@id}>"
 					{>(regBase.advanced(@k))}
 					<div class="layer">
-					<h2>Forwarding to {$@forwardTo}</h2>
-					<button onclick="{$@click}">Withdraw All</button>
+					<h3>Forwarding to</h3>
+					<img class="rb-idicon-sml idicon-sml" src="{$blockieSml(@forwardTo)}" />
+					<a class="mono" href="https://etherscan.io/address/{$@forwardTo}" target="_blank">{$@forwardTo}</a>
 					</div>
 				</div>`,
 			f: {

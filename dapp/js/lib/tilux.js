@@ -21,7 +21,7 @@ let candleNum = 0;
 let sparks = [];
 
 // Proxy handler for nested reactive objects
-var luxHandler = {
+const luxHandler = {
 	has: (target, key) => {
 		if (key === "__isLux") return true;
 		return key in target;
@@ -77,11 +77,13 @@ class Tilux {
 	// Renders a template to a collection of HTML elements
 	static render(s,c) {
 		// render as HTML to DOM
-		// sparks = [];
-		document.querySelectorAll(s).forEach( e => { e.outerHTML = this.l(c); });
+		document.querySelectorAll(s).forEach( e => { 
+			sparks.push([]);
+			e.outerHTML = this.l(c);
+		});
 		// Required to run selection again as the DOM doesn't immediately register the outerHTML change 
 		document.querySelectorAll(s).forEach( e => {
-			sparks.forEach( spark=>{
+			sparks.pop().forEach( spark => {
 				for(let k in spark) {
 					e.querySelectorAll(k).forEach( chld => {
 						for(let ev in spark[k])
@@ -89,8 +91,8 @@ class Tilux {
 					});
 				}
 			});
-			// sparks = [];
 		});
+		// sparks = [];
 	}
 
 	// Binary template selector
@@ -108,7 +110,7 @@ class Tilux {
 	static l(c) {
 		// case primitives to candle
 		if(typeof c !== 'object') c = {w:c || ''};
-		if(c.s) sparks.push(c.s);
+		if(c.s) sparks[sparks.length - 1].push(c.s);
 		return eval(
 			'`'
 			+ c.w
@@ -120,5 +122,3 @@ class Tilux {
 			)
 	}
 }
-
-console.log("ran tilux.js");

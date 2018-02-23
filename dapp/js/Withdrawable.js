@@ -1,7 +1,7 @@
 // $import('js/apis/WithdrawableAPI.js');
 
 const withdrawAll = (k) => {
-	if (!!k) return {
+	return {
 		w: `<button onclick="{$@withdrawAll}">Withdraw All</button>`,
 		f: {
 			withdrawAll: () => k.withdrawAll(),
@@ -10,7 +10,7 @@ const withdrawAll = (k) => {
 }
 
 const withdrawAllFor = (k) => {
-	if (!!k) return {
+	return {
 		w: `<input type="text" placeholder="address to withdraw to" onkeypress="withdrawForAddr = this.value" />
 			<button onclick="{$@withdrawAllFor}({$@withdrawForAddr})">Withdraw All For</button>`,
 		f: {
@@ -23,12 +23,14 @@ const withdrawAllFor = (k) => {
 }
 
 const withdrawable = (k) => {
-	if (!!k ) return {
+	return {
 		w: `
 			<div id='{$@id}'>
 				{$@balance}
 				{<(@isWithdraw, withdrawAll(@k), '')}
-				{<(@isWithdrawFor, withdrawAllFor(@k),'')}
+				<div>
+					{<(@isWithdrawFor, withdrawAllFor(@k),'')}
+				</div>
 			</div>
 		`,
 		f: {

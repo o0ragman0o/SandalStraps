@@ -104,13 +104,13 @@ const sandalStraps = {
 				'#sel-factory': {
 					change: (event)=>{
 						let fAddr = self.f.factReg.addressByName(event.target.value);
-						self.f.s_selFact.f.c = kCandles[fAddr].minimal;
+						self.f.s_selFact.f.c = kCandles[fAddr].minimal || '';
 					},
 				},
 				'#sel-reg': {
 					change: (event) => {
 						let rAddr = self.f.metaReg.addressByName(event.target.value);
-						self.f.s_selReg.f.c = kCandles[rAddr].minimal;
+						self.f.s_selReg.f.c = kCandles[rAddr].minimal || '';
 					},
 				},
 			},

@@ -1,5 +1,5 @@
 var currContract = {};
-var currContractLux = new Lux({address: '0x0'})
+var currContractLux = new Lux({address: '0x0'});
 
 
 function start() {
@@ -9,6 +9,7 @@ function start() {
 	Tilux.render("#accounts", accountsTplt);
 	Tilux.render("#nav-path", navPath);
 	Tilux.render("#footer-tplt", footer);
+	// Tilux.render("#modal", modal);
 
 	navPath.push(alphaStrapsAddr);
 }

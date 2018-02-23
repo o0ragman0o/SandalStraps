@@ -21,7 +21,7 @@ const Value = {
 				k: k,
 				id: `value-${k.address}.bas`,
 				decimals: () => { return k.decimals().toNumber()},
-				value: () => {return k.value().div(10**this.decimals).toNumber()},
+				value: () => {return k.value().div(10**k.decimals).toNumber()},
 			}			
 		}
 	},
@@ -42,7 +42,7 @@ const Value = {
 						</div>
 						<div>
 							<input id="deci-inp" class="ss-input" type="number" placeholder="Set Decimals" min="0" max="77"/>
-							<button id="deci-btn>Set</button>
+							<button id="deci-btn">Set</button>
 						</div>
 					</div>
 				</div>`,
@@ -51,7 +51,7 @@ const Value = {
 				k: k,
 				id: `value-${k.address}.adv`,
 				decimals: () => { return k.decimals().toNumber()},
-				value: () => {return k.value().div(10**this.decimals).toNumber()},
+				value: () => {return k.value().div(10**k.decimals()).toNumber()},
 			}
 		}
 	}

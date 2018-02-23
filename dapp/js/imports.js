@@ -1,12 +1,16 @@
 $import ("js/lib/blockies.js");
-$import ("js/lib/Web3Tools.js");
+// $import ("js/lib/Web3Tools.js");
 $import ("js/style.js");
 $import ("js/Accounts.js");
 $import ("js/net.js");
 $import ("js/socLinks.js");
+$import ("js/modal.js");
 
+$import ("js/apis/Erc20API.js")
 $import ("js/apis/WithdrawableAPI.js");
 $import ("js/apis/VersionAPI.js");
+$import ("js/apis/OwnedAPI.js");
+$import ("js/apis/OwningAPI.js");
 $import ("js/apis/RegBaseAPI.js");
 $import ("js/apis/RegistrarAPI.js");
 $import ("js/apis/FactoryAPI.js");
@@ -19,8 +23,11 @@ $import ("js/apis/InvoicesAPI.js");
 $import ("js/apis/MeteredPaymentsAPI.js");
 $import ("js/apis/PayableERC20API.js");
 
+$import ("js/Erc20.js")
 $import ("js/Withdrawable.js");
 $import ("js/Version.js");
+$import ("js/Owned.js");
+$import ("js/Owning.js");
 $import ("js/RegBase.js");
 $import ("js/Factory.js");
 $import ("js/Registrar.js");

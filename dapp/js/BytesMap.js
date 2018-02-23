@@ -26,12 +26,11 @@ const bytesMap = {
 		return new Tilux({
 			w: `<div id="{$@id}>"
 					{>(regBase.advanced(@k))}
-					<div>
+					<div class="layer">
 						<input id="key-input-{$@kAddr}" placeholder="Key" class="mono" type="text"></input>
-						<button onclick="bytesMap.getBytes(e,{$@k})">Get</button>
-						<div>
-							<p><textarea id="text-area-{$@kAddr}" placeholder="Enter bytes to store"></textarea></p>
-						</div>
+						<button id="get-btn">Get</button>
+						<textarea id="text-area-{$@kAddr}" placeholder="Enter bytes to store"></textarea>
+						<button id="set-btn">Set</button>
 					</div>
 				</div>`,
 			f: {

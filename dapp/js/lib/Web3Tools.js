@@ -2,9 +2,11 @@ var web3;
 var currAccount;
 var accs;
 
+
 function web3Connect(url) {
 	if(typeof web3 === 'undefined')
 	web3 = new Web3(new Web3.providers.HttpProvider(url || 'http://localhost:8545'));
+    BigNumber = web3.BigNumber;
 }
 
 function accounts() {
@@ -17,6 +19,10 @@ function balance(addr) {
 
 function toEther(num) {
     return web3.fromWei(num).toFormat(3);
+}
+
+function toDecimal(num, shift) {
+    return new BigNumber(num).mul(10**shift).toNumber();
 }
 
 function setAccount(acc) {

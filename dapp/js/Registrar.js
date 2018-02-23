@@ -43,7 +43,7 @@ const registrar = {
 						<button id="register-btn">Register Contract</button>
 					</div>
 					<div class="layer">
-					{#([''], @registered())}
+						{#([''], @registered())}
 					</div>
 				</div>
 			`,

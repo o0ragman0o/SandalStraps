@@ -1,63 +1,38 @@
 // $import('js/apis/RegBaseAPI.js');
 
-
-const owned = (k) => {
-
-	let self = new Tilux({
+const regOwned = (k) => {
+	let self = {
 		w: `
-			<div id="{$@id}">
-			<h3>Owner Functions</h3>
-				<button id="check">Check</button><br>
-				<input id="new-owner-inp" type="text" placeholder="New owner address" value="{$@newOwner}"/>
-				<button id="change-owner-btn">Change Owner</button><br>
-				<input id="change-res-inp" type="text" placeholder="New resource hash" value="{$@res}"/>
-				<button id="change-res-btn">Change Resource</button><br>
-				<button id="destroy-btn">Destroy Contract</button><br>
-			</div>
+			{>(owned(@k))}
+			<input id="change-res-inp" type="text" placeholder="New resource hash" value="{$@res}"/>
+			<button id="change-res-btn">Change Resource</button><br>
+			<button id="destroy-btn">Destroy Contract</button><br>
 		`,
 		f: {
-			id: `owned-${k.address}`,
-			newOwner: '',
 			k: k,
-			res: web3.toHex(k.resource()),
+			res: '',
 		},
 		s: {
-			'#check': {
-				click: (event) => {	alert("Check! Check! Check 1, 2"); },
+			"change-res-inp": {
+				change: (event) => {
+					self.f.res = event.target.value;
+				},
 			},
-			'#new-owner-inp': {
-				change: (event) => { self.f.newOwner = event.target.value; },
+			"change-res-btn": {
+				click: () => {
+					self.f.k.changeResource(newResource);
+					console.log('changeResource',self.f.k.address, newResource);
+				},
 			},
-			'#change-owner-btn': {
-				click: () => { regBase.changeOwner(k.address, self.f.newOwner); },
-			},
-			'#change-res-inp': {
-				change: (event) => { self.f.res = event.target.value; },
-			},
-			'#change-res-btn': {
-				click: () => { self.f.k.changeResourse(self.k.res); },
-			},
-			'#destroy-btn': {
-				click: () => { self.f.k.destroy(); },
+			"destroy-btn": {
+				click: ()=>{
+					self.f.k.destroy();
+					console.log('destroy',kAddr);
+				},
 			},
 		},
-	})
-
+	};
 	return self;
-}
-
-const newOwner = (k) => {
-	return {
-		w: '<button id="acc-owner-btn">Accept Ownership</button></br>',
-		f: {
-
-		},
-		s: {
-			'#acc-owner-btn': {
-				click: () => { k.acceptOwnership(); },
-			},
-		},
-	}
 }
 
 const regBase = {
@@ -118,7 +93,8 @@ const regBase = {
 							<div class="rb-owner ss-addr u-addr"><i class="fas fa-fw fa-user"></i> <a href="https://etherscan.io/address/{$@owner}" target="_blank">{$@owner}</a></div>
 							<div class="rb-ext">
 								{>(withdrawable(@k))}
-								{<(@isOwner(), @owned, '')}
+								{<(@isOwner(), regOwned(@k), '')}
+								{<(@isOwner(), owning(@k), '')}
 								{<(@isNewOwner(),@newOwner,'')}
 							</div>
 						</div>
@@ -131,32 +107,16 @@ const regBase = {
 					regName: utf8(k.regName()),
 					version: utf8(k.VERSION()),
 					owner: k.owner(),
-					owned: owned(k),
-					newOwner: newOwner(k),
-					isOwner: () => {return k.owner() == currAccountLux.address;},
-					isNewOwner: () => {return k.newOwner() == currAccountLux.address;},
+					s_owning: owning(k),
+					s_newOwner: newOwner(k),
+					isOwner: () => {return k.owner() === currAccountLux.address;},
+					isNewOwner: () => {return k.newOwner() === currAccountLux.address;},
 					resource: k.resource(),
 				},
 			});
 			ret.gaze(currAccountLux);
 			return ret;
 		}
-	},
-
-	changeOwner(kAddr, newOwner){
-		console.log('changeOwner',kAddr, newOwner);
-	},
-
-	changeResource(kAddr, newResource){
-		console.log('changeResource',kAddr, newResource);
-	},
-
-	accpetOwnership(kAddr){
-		console.log('acceptOwnership',kAddr);
-	},
-
-	destroy(kAddr){
-		console.log('destroy',kAddr);
 	},
 }
 
