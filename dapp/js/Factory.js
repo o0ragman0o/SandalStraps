@@ -1,4 +1,17 @@
 // $import ("js/apis/FactoryAPI.js");
+    
+
+const formatFactoryEvents = (log) => {
+	switch (log.event) {
+		case 'Created': return Tilux.l(`
+				<h4>Created '${utf8(log.args._regName)}'</h4>
+				<label>Address</label> {>(ethAddrSml('${log.args._kAddr}'))}<br />
+				<label>Creator</label> {>(ethAddrSml('${log.args._creator}'))}<br />
+				`);
+			break;
+		default: return formatWithdrawableEvents(log);						
+	}
+}
 
 const factory = {
 	minimal: (k) => {
@@ -26,33 +39,49 @@ const factory = {
 	},
 
 	advanced: (k) => {
-		return {
+		const self = new Tilux({
 			w: `<div id="{$@id}">
 				{>(regBase.advanced(@k))}
 				<div class="layer" id="{$@id}">
-						<h2>Create a {$@regName} contract for <i class="fab fa-fw fa-ethereum"></i>{$@price}</h2>
-						<div>
-							<input class="ss-input" type="text" placeholder="New Contract Name" onchange="{$@prodName} = this.value"></input>
-							<input class="ss-input ss-addr" type="text" placeholder="Owner Address" value="{$@forOwner}" onchange="{$@forOwner} = this.value"></input>
-							<button onclick="{$@create}({$@kAddr}, {$@prodName}, {$@forOwner})">Create</button>
-						</div>
-						<p>* Note: Contracts created directly by a factory are not registered in a registrar
-						</p>
-						<p>* If owner address is not given, the contract owner defaults to the creating accounts address
-						</p>
+					<h2>Create a {$@regName} contract for <i class="fab fa-fw fa-ethereum"></i>{$@prodPrice}</h2>
+					<div class="ss-panel">
+						<input id="prod-name" class="ss-input" type="text" placeholder="New Contract Name"></input>
+						<input id="prod-owner" class="ss-input ss-addr" type="text" placeholder="Owner Address"></input>
+						<button id="btn-prod-crt" Create">Create</button>
+					</div>
+					<p>* Note: Contracts created directly by a factory are not registered in a registrar. If the product contract is required to be a registered 
+					component of a SandalStraps organisation, then it should be created using 'Create New' in the organisation's SandalsStraps contract.
+					</p>
+					<p>* If no owner address is given, the product contract owner defaults to the creating accounts address
+					</p>
 				</div>
+				{>(events(@k, formatFactoryEvents))}
 			</div>`,
 			f: {
 				id: `factory-${k.address}-adv`,
 				k: k,
 				kAddr: k.address,
 				regName: utf8(k.regName()),
-				price: toEther(k.value()),
+				prodPrice: toEther(k.value()),
 				prodName: '',
 				forOwner: currAccountLux.value,
-				create: (kAddr, name, owner) => {contracts[kAddr].createNew(name, owner)}
 			},
-		}
+			s: {
+				"#prod-name": {
+					change: event => self.f.prodName = event.target.value,
+				},
+				"#prod-owner": {
+					change: event => self.f.prodOwner = event.target.value,					
+				},
+				"#btn-prod-crt": {
+					'click': () => {
+						self.f.k.createNew(self.f.prodName, self.f.prodOwner, {from: currAccountLux.address, gas: 3000000, value: self.f.k.value()})
+					},
+				},
+			}
+		});
+
+		return self;
 	},
 }
 

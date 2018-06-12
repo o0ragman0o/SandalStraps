@@ -14,11 +14,20 @@ function accounts() {
 }
 
 function balance(addr) {
-	return web3.fromWei(web3.eth.getBalance(addr)).toFormat(3);
+	return web3.eth.getBalance(addr);
+}
+
+function block(num) {
+    return web3.eth.getBlock(num);
 }
 
 function toEther(num) {
+    if (!(num instanceof BigNumber)) num = new BigNumber(num);
     return web3.fromWei(num).toFormat(3);
+}
+
+function toWei(num) {
+    return web3.toWei(num);
 }
 
 function toDecimal(num, shift) {
@@ -41,6 +50,10 @@ function shortenAddr(addr) {
 	return `${addr.slice(0,8)}...${addr.slice(-6)}`;
 }
 
+function checksumAddr(addr) {
+    return web3.toChecksumAddress(addr);
+}
+
 function utf8(hex) {
 	return web3.toUtf8(hex);
 }
@@ -50,7 +63,11 @@ function blockie(addr) {
 }
 
 function blockieSml(addr) {
-	return blockies.create({seed:addr.toLowerCase()}).toDataURL();
+    return blockies.create({seed:addr.toLowerCase()}).toDataURL();
+}
+
+function blockieTny(addr) {
+	return blockies.create({seed:addr.toLowerCase(), size:5, scale:3}).toDataURL();
 }
 
 function txcb(e, receipt){
@@ -103,7 +120,12 @@ function txrReport(receipt) {
 }
 
 
+function sha3(str, opt) {
+  return "0x" + web3.sha3(str, opt).replace("0x", "");
+};
+
 web3Connect();
 currAccount = accounts()[0];
+
 
 console.log("ran Web3Tools.js");

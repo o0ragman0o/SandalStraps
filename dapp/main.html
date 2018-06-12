@@ -6,28 +6,27 @@
   <link href="https://fonts.googleapis.com/css?family=Roboto" rel="stylesheet">
   <style id="ss-style"></style>
   <script defer src="https://use.fontawesome.com/releases/v5.0.6/js/all.js"></script>
+  <script type="application/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/showdown/1.8.6/showdown.min.js"></script>
   <script type="application/javascript" src="js/lib/web3/web3.min.js"></script>
   <script type="application/javascript" src="js/lib/DomTools.js"></script>
   <script type="application/javascript" src="js/lib/Web3Tools.js"></script>
   <script type="application/javascript" src="js/lib/tilux.js"></script>
 </head>
 <body onload="start()">
-  <div class="container">
-    <div class="banner">
-      <h1 class="upper">Sandal Straps</h1>
+  <article>
+    <div class="row banner">
+      <div><h1 class="upper">Sandal Straps</h1></div>
+      <div id="accounts" class="js-end"></div>
     </div>
-    <div id="accounts" class="accounts">
+    <!-- <div class="column as-center js-center"> -->
+    <div class="main js-center">
+      <div id="nav-path" class="nav-path"></div>
+      <div id="contract-tplt" class="contract"></div>
     </div>
-    <div id="nav-path" class="navpath">
+    <div id="footer-tplt" class="footer-row">
     </div>
-    <div id="contract-tplt" class="contract layer">
-    </div>
-    <div id="footer-tplt" class="footer">
-    </div>
-  </div>
+  </article>
 </body>
-  <div id="modal" class="modal"></div>
+  <div id="ss-modal" class="modal"></div>
   <script type="application/javascript" src="js/imports.js"></script>
-  <!-- <script type="application/javascript" src="js/main.js"></script> -->
-  <!-- <script type="application/javascript" src="js/contracts.js"></script> -->
 </html>

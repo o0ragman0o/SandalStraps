@@ -1,9 +1,9 @@
 const footer = new Tilux({
 	w: `
-		<div id="footer-tplt" class="footer">
-		{>(network)}
-		{>(socLinks)}
-		</div>
+		<footer id="footer-tplt" class="footer-row">
+			{>(network)}
+			{>(socLinks)}
+		</footer>
 		`,
 	f: {}
 })

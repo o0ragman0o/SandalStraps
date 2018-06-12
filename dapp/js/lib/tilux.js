@@ -2,23 +2,26 @@
 
 Tilux JS 
 file:	tilux.js
-ver:	0.0.3
+ver:	0.0.5
 author: Darryl Morris
 email:  o0ragman0o AT gmail.com
-updated:16-Feb-2018
+updated:20-May-2018
 copyright: 2018
 
 Release Notes:
-* Added 'sparks' for event handling
+* Rolled parser into one replace function
+* Using 'Function' constructor instead of 'eval'
+* incorporate template branch selector {< into literal renderer {>
 
 TODO:
-Test `eval()` exploits
 
 \*******************************************************************/
 	
 let candleNum = 0;
 
 let sparks = [];
+
+const t_rplc = {'@':'c.f.','{$':'${','{#':'${Tilux.t','{>':'${Tilux.l'};
 
 // Proxy handler for nested reactive objects
 const luxHandler = {
@@ -30,7 +33,7 @@ const luxHandler = {
 	get: (target, key) => {
 		if (key === '_p') return;
 		let ret = target[key];
-		if (typeof ret !== 'object') return ret;
+		if (typeof ret !== 'object' || ret === null) return ret;
 		if (!key.startsWith('s_')) ret._p = target;
 		if ('__isLux' in ret) return ret;
 		return new Proxy(ret, luxHandler);
@@ -65,21 +68,24 @@ class Tilux {
 		this.w = candle.w || '';
 		this.f = candle.f || {};
 		this.s = candle.s || undefined;
-		this.f.id = this.f.id || `tlx_${candleNum++}`;
-		cbs.push(()=>{Tilux.render(`#${candle.f.id}`, candle);})
+		this.f.id = candle.f.id || `tlx_${candleNum++}`;
+		cbs.push(()=>{Tilux.render(`#${this.f.id}`, this);})
+		// cbs.push(()=>{Tilux.render(`#${candle.f.id}`, candle);})
 		return new Lux(this, cbs);
 	}
 
 	gaze(lux){
 		lux.cbs.push(()=>{Tilux.render(`#${this.f.id}`, this)})
+		// console.log(`Gaze`, this, `at`, lux);
 	}
 
 	// Renders a template to a collection of HTML elements
 	static render(s,c) {
 		// render as HTML to DOM
-		document.querySelectorAll(s).forEach( e => { 
+		document.querySelectorAll(s).forEach( e => {
 			sparks.push([]);
 			e.outerHTML = this.l(c);
+			// console.log(e);
 		});
 		// Required to run selection again as the DOM doesn't immediately register the outerHTML change 
 		document.querySelectorAll(s).forEach( e => {
@@ -92,11 +98,7 @@ class Tilux {
 				}
 			});
 		});
-		// sparks = [];
 	}
-
-	// Binary template selector
-	static b(o,a,b) { return this.l(o?a:b); }
 
 	// Recursive template rendering
 	static t(l,a) {
@@ -107,18 +109,11 @@ class Tilux {
 	}
 	
 	// Template literal renderer
-	static l(c) {
-		// case primitives to candle
+	static l(c, d=true, e='') {
+		// cast primitives to candle
+		c = d ? c : e;
 		if(typeof c !== 'object') c = {w:c || ''};
 		if(c.s) sparks[sparks.length - 1].push(c.s);
-		return eval(
-			'`'
-			+ c.w
-			.replace(/@|{\$/g, (f)=>({'@':'c.f.','{$':'${'})[f])
-			.replace(/{</g, '${Tilux.b')
-			.replace(/{#/g, '${Tilux.t')
-			.replace(/{>/g, '${Tilux.l')
-			+ '`'
-			)
+		return Function('c', `"use strict"; return \`${c.w.replace(/@|{\$|{#|{>/g, f=>t_rplc[f])}\`;`)(c)
 	}
 }

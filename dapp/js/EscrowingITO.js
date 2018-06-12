@@ -24,7 +24,7 @@ const escrowingITO = {
 
 	advanced: (k) => {
 		var self = new Tilux({
-			w: `<div id="{$@id}>"
+			w: `<div id="{$@id}">
 					{>(regBase.advanced(@k))}
 					<div>
 					</div>
@@ -36,5 +36,19 @@ const escrowingITO = {
 		return self;
 	}
 }
+
+
+resources["EscrowingITO v0.4.0"] = {
+	template: escrowingITO,
+	interface: EscrowingITOContract,
+	docPath: "docs/EscrowingITOAPI.md"
+}
+
+resources["EscrowingITOFactory v0.4.0"] = {
+	template: factory,
+	interface: FactoryContract,
+	docPath: "docs/EscrowingITOAPI.md"
+}
+
 
 console.log("ran escrowingITO.js");

@@ -1,12 +1,10 @@
-var currContract = {};
-var currContractLux = new Lux({address: '0x0'});
-
 
 function start() {
 	// TODO push interface names to contract resource 
 
 	Tilux.render("#ss-style", ss_style);
 	Tilux.render("#accounts", accountsTplt);
+	Tilux.render("#nav-tree", navTree);
 	Tilux.render("#nav-path", navPath);
 	Tilux.render("#footer-tplt", footer);
 	// Tilux.render("#modal", modal);
@@ -17,7 +15,7 @@ function start() {
 
 
 var mainTplt = new Tilux({
-	w: `<div id="{$@id}" class="contract">
+	w: `<div id="{$@id}"  class="contract">
 		{>(@template(@kAddr))}
 		</div>
 	`,
@@ -25,7 +23,7 @@ var mainTplt = new Tilux({
 		id: "contract-tplt",
 		kAddr: "",
 		template: (kAddr)=>{
-			return kCandles[kAddr].advanced;
+			return !kCandles[kAddr] ? `<p>SandalStraps contract not found.</p>` : kCandles[kAddr].advanced;
 		},
 	}
 })

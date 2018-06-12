@@ -4,9 +4,9 @@ const owned = (k) => {
 
 	let self = new Tilux({
 		w: `
-			<div id="{$@id}">
-			<h3>Owner Functions</h3>
+			<div id="{$@id}" class="ss-panel">
 				<input id="new-owner-inp" type="text" placeholder="New owner address" value="{$@newOwner}"/>
+				{>(dapp_addressInput())}
 				<button id="change-owner-btn">Change Owner</button><br>
 			</div>
 		`,
@@ -22,7 +22,8 @@ const owned = (k) => {
 				change: (event) => { self.f.newOwner = event.target.value; },
 			},
 			'#change-owner-btn': {
-				click: () => { regBase.changeOwner(k.address, self.f.newOwner); },
+				click: () => { toTx(self.f.k, 'changeOwner', self.f.newOwner); },
+				// click: () => { regBase.changeOwner(k.address, self.f.newOwner); },
 			},
 		},
 	})

@@ -1,8 +1,8 @@
 /******************************************************************************\
 
 file:   SandalStraps.sol
-ver:    0.4.0
-updated:13-Nov-2017
+ver:    0.4.1
+updated:30-May-18
 author: Darryl Morris (o0ragman0o)
 email:  o0ragman0o AT gmail.com
 
@@ -15,25 +15,8 @@ See MIT Licence for further details.
 <https://opensource.org/licenses/MIT>.
 
 Release Notes:
-* Completely breaking changes
-* Added minimum Withdrawable API compliance
-* Change factoryFee to productPrice
-* Changed newFromFactoryFee to commission
-* Changed "newfromfactoryfee" to "sswallet"
-* Hardcoded predeployed bootstrap address
-* removed __init3()
-* Renamed registrar proxy getters according to registrar getter name changes
-* Removed `event RegistrarChange(bytes32 indexed _registrar, address indexed _kAddr);`
-* Added `function removeFrom(bytes32 _registrar, address _kAddr)`
-* Added `event RegistrarRegister(bytes32 indexed _registrar, address indexed _kAddr);`
-* Added `event RegistrarRemove(bytes32 indexed _registrar, address indexed _kAddr);`
-* Added `reservedNames` mapping for to allow only owner to add reserved name contracts
-* Added `function changeReservedsName(bytes32 _regName, bool _reserved) returns (bool);
-* Added explicit reentry protection with `ReentryProtected` contract
-* `addFactory()` to `registerFactory(address _kAddr)`
-* `addTo()` to `registerIn()
-* SandalStraps is Owning
-* pragma solidity 0.4.17
+* Fixed incorrect explicit return bug in `preventReentry` modified functions.
+  Proper method is to use named return parameters
 
 \******************************************************************************/
 
@@ -55,7 +38,7 @@ contract SandalStraps is
 // Constants
 //
 
-    bytes32 constant public VERSION = "SandalStraps v0.4.0";
+    bytes32 constant public VERSION = "SandalStraps v0.4.1";
 
     // Pre-deployed registrar factory address
     address constant BOOTSTRAP = 0xDFd6dCCF429Fe7d4e8bba3f9c29c2C7CbA4f52EF;
@@ -304,7 +287,7 @@ contract SandalStraps is
         public
         payable
         preventReentry
-        returns (bool)
+        returns (bool success_)
     {
         if (msg.value > 0) { Deposit(msg.sender, msg.value); }
 
@@ -348,7 +331,7 @@ contract SandalStraps is
             metaRegistrar.register(registrar);
             RegistrarRegister("metaregistrar", registrar);
         }
-        return true;
+        success_ = true;
     }
 
     /// @notice Create a new contract with name `_regName` from factory
@@ -480,10 +463,10 @@ contract SandalStraps is
         payable
         onlyOwner
         preventReentry
-        returns (bool)
+        returns (bool success_)
     {
         require(_kAddr.call.value(msg.value)(_callData));
-        return true;
+        success_ = true;
     }
 
     // Proxy functions to interact with contracts owned by the SandalStraps
@@ -553,7 +536,7 @@ contract SandalStrapsFactory is Factory
     bytes32 constant public regName = "sandalstraps";
 
     /// @return version string
-    bytes32 constant public VERSION = "SandalStrapsFactory v0.4.0";
+    bytes32 constant public VERSION = "SandalStrapsFactory v0.4.1";
 
 //
 // Functions

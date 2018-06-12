@@ -1,36 +1,38 @@
 const modal = new Tilux({
-		w: `
-			<div id="{$@id}" class="modal" style="display:{$@display}">
-				<div class="modal-content">
-					{>(@candle)}
-					<button id="ok-btn">Ok</button>
-					<button id="cancel-btn">Cancel</button>
+	w: `
+		<div id="{$@id}" class="modal" style="display:{$@display}">
+			<div class="modal-inner">
+				{>(@candle)}
+				<div>
+					<button id="ok-btn" class="js-end">Ok</button>
+					<button id="cancel-btn" class="js-end">Cancel</button>
 				</div>
 			</div>
-		`,
-		f: {
-			id: "modal",
-			candle: '',
-			display: 'none',
-			onOk: ()=>{},
+		</div>
+	`,
+	f: {
+		id: "ss-modal",
+		candle: '',
+		display: 'none',
+		onOk: '',
+	},
+	s: {
+		"#ok-btn": {
+			click: ()=>{modal.f.onOk(modal.f.candle);},
 		},
-		s: {
-			"#ok-btn": {
-				click: ()=>{self.f.onOk();},
-			},
-			"#cancel-btn": {
-				click: closeModal,
-			},
+		"#cancel-btn": {
+			click: ()=>{modal.hide();},
 		},
-	});
+	},
+});
 
-function openModal(candle, onOkCb) {
+modal.show = (candle, onOkCb) => {
 	modal.f.candle = candle;
 	modal.f.display = 'block';
-	modal.f.onOk = onOkCb;
+	modal.f.onOk = onOkCb || candle.f.okCb || modal.hide;
 }
 
-function closeModal() {
+modal.hide = () => {
 	modal.f.candle = '';
 	modal.f.display = 'none';
 }

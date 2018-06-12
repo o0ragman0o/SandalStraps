@@ -1,14 +1,18 @@
-function $import(file, _async) {
+
+
+function $import(file, async = false) {
     // DOM: Create the script element
-    // setTimeout(()=>{
-	    let jsElm = document.createElement("script");
-	    jsElm.type = "application/javascript";
-	    jsElm.src = file;
-	    // jsElm.defer = !!_async;
-	    document.head.appendChild(jsElm),0;
-	    jsElm.onload = ()=>(console.log("loaded element", jsElm, !!_async?"async":""));
-	    console.log("created", file);
-    // },0);
+    let jsElm = document.createElement("script");
+    jsElm.type = "application/javascript";
+    jsElm.src = file;
+    jsElm.async = async;
+	jsElm.onload = ()=>(console.log("loaded element", jsElm));
+    document.head.appendChild(jsElm);
+	console.log("created", file);
+}
+
+function $loadFile(file) {
+	let reader = new FileReader();
 }
 
 function $(selector, parent = document) {

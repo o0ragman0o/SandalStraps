@@ -1,8 +1,8 @@
 /******************************************************************************\
 
 file:   BytesMap.sol
-ver:    0.4.0
-updated:8-Nov-2017
+ver:    0.4.1
+updated:3-Jun-2018
 author: Darryl Morris (o0ragman0o)
 email:  o0ragman0o AT gmail.com
 
@@ -23,10 +23,7 @@ See MIT Licence for further details.
 
 Release Notes
 -------------
-* Using Factory 0.4.0 for `withdrawAll()` instead of `withdraw(<value>)`
-* Change from 'fee' to 'price'
-* Added 4 byte descriptor prefix to hash 
-* pragma solidity 0.4.17 
+* Added `event Cleared(bytes32 indexed _hash)`
 
 
 \******************************************************************************/
@@ -41,7 +38,7 @@ contract BytesMap is RegBase
 // Constants
 //
 
-    bytes32 constant public VERSION = "BytesMap v0.4.0";
+    bytes32 constant public VERSION = "BytesMap v0.4.1";
     bytes32 constant TYPE_MASK =
         0x00000000ffffffffffffffffffffffffffffffffffffffffffffffffffffffff;
 
@@ -56,6 +53,7 @@ contract BytesMap is RegBase
 //
 
     event Stored(bytes32 indexed _hash);
+    event Cleared(bytes32 indexed _hash);
 
 //
 // Functions
@@ -94,9 +92,12 @@ contract BytesMap is RegBase
     /// @notice Clear `_bytes`. Must be bytes owner or contract owner
     function clear(bytes4 _type, bytes _bytes)
         public
+        returns (bool)
     {
         bytes32 hash = keccak256(msg.sender, _bytes) & TYPE_MASK | _type;
         delete bytesMap[hash];
+        Cleared(hash);
+        return true;
     }
     
     /// @notice Clear string at hash key of `_hash`
@@ -109,6 +110,7 @@ contract BytesMap is RegBase
         bytes32 hash = _hash & TYPE_MASK;
         require(hash == check || msg.sender == owner);
         delete bytesMap[_hash];
+        Cleared(bytes32 hash);
         return true;
     }
 }
@@ -124,7 +126,7 @@ contract BytesMapFactory is Factory
     bytes32 constant public regName = "bytesmap";
     
     /// @return version string
-    bytes32 constant public VERSION = "BytesMapFactory v0.4.0";
+    bytes32 constant public VERSION = "BytesMapFactory v0.4.1";
 
 //
 // Functions

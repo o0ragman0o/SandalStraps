@@ -1,8 +1,8 @@
 /******************************************************************************\
 
 file:   Value.sol
-ver:    0.4.0
-updated:26-Nov-2017
+ver:    0.4.1
+updated:3-Jun-2018
 author: Darryl Morris (o0ragman0o)
 email:  o0ragman0o AT gmail.com
 
@@ -22,10 +22,9 @@ See MIT Licence for further details.
 
 Release Notes
 -------------
-* Using Factory 0.4.0 for `withdrawAll()` instead of `withdraw(<value>)`
-* changed from `fee` to `price`
-* pragma solidity 0.4.17 
-* added `decimals` and `function setDecimals(uint8)`
+* added `units` and `function setUnits(bytes31)`
+* added `event Set(uint _value, uint8 _decimals, bytes32 _units)`
+
 
 \******************************************************************************/
 
@@ -35,13 +34,18 @@ import "./Factory.sol";
 
 contract Value is RegBase
 {
-    bytes32 constant public VERSION = "Value v0.4.0";
+    bytes32 constant public VERSION = "Value v0.4.1";
     
     /// @return The current set value
     uint public value;
-    
+
     /// @return The fix poitn decimal place
     uint8 public decimals;
+
+    /// @return Units description
+    bytes31 public units;
+
+    event Set(uint _value, uint8 _decimals, bytes32 _units);
 
     function Value(address _creator, bytes32 _regName, address _owner)
         public
@@ -59,6 +63,7 @@ contract Value is RegBase
         returns (bool)
     {
         value = _value;
+        Set(uint _value, uint8 _decimals, bytes32 _units);
         return true;
     }
 
@@ -71,6 +76,20 @@ contract Value is RegBase
         returns (bool)
     {
         decimals = _decimals;
+        Set(uint _value, uint8 _decimals, bytes32 _units);
+        return true;
+    }
+
+    /// @notice Set the decimal places to `_decimal`
+    /// @param _decimals A fixed point decimal place value
+    /// @return Boolean success value
+    function setUnits(bytes31 _units)
+        public
+        onlyOwner
+        returns (bool)
+    {
+        units = _units;
+        Set(uint _value, uint8 _decimals, bytes32 _units);
         return true;
     }
 }
@@ -86,7 +105,7 @@ contract ValueFactory is Factory
     bytes32 constant public regName = "value";
 
     /// @return version string
-    bytes32 constant public VERSION = "ValueFactory v0.4.0";
+    bytes32 constant public VERSION = "ValueFactory v0.4.1";
 
 //
 // Function

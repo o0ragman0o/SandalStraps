@@ -3,21 +3,23 @@ var networkLux = new Lux(web3.version);
 
 
 const netStats = new Tilux({
-	w: `<div id='{$@id}'>
-		<i class="fas fa-fw fa-share-alt"></i> {$networkLux.network} {$@netName()}<br>
-		<i class="fas fa-fw fa-cubes"></i> {$blockLux.block.number} / {$blockLux.sync.highestBlock || "sync'd"}<br>
-		<i class="fas fa-fw fa-users"></i> {$web3.net.peerCount}
-	 </div>`,
+	w: `
+		<div id='{$@id}'>
+			<i class="fas fa-fw fa-share-alt"></i> {$networkLux.network} {$@netName}<br>
+			<i class="fas fa-fw fa-cubes"></i> {$blockLux.block.number} / {$blockLux.sync.highestBlock || "sync'd"}<br>
+			<i class="fas fa-fw fa-users"></i> {$web3.net.peerCount}
+		 </div>
+	`,
 	f:{
 		id: 'net-stats',
-		netName: ()=>{return {0:'Olympic',1:'Main Net',2:'Mordon',3:'Ropsten',4:'Rinkeby',42:'Kovan',77:'Sokol',99:'Core'}[networkLux.network] || `Private`;},
+		get netName() {return {0:'Olympic',1:'Main Net',2:'Mordon',3:'Ropsten',4:'Rinkeby',42:'Kovan',77:'Sokol',99:'Core'}[networkLux.network] || `Private`;},
 	},
 })
 
 const network = new Tilux({
 	w: `
 		<div id={$@id} class="net">
-		{<(@isConnected, netStats, {w:'Offline',f:{}})}
+		{>(netStats, @isConnected, {w:'Offline',f:{}})}
 		</div>
 	`,
 	f: {

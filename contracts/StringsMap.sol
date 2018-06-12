@@ -1,8 +1,8 @@
 /******************************************************************************\
 
 file:   StringsMap.sol
-ver:    0.4.0
-updated:5-Nov-2017
+ver:    0.4.1
+updated:3-Jun-2018
 author: Darryl Morris (o0ragman0o)
 email:  o0ragman0o AT gmail.com
 
@@ -20,9 +20,7 @@ See MIT Licence for further details.
 
 Release notes
 -------------
-* Using Factory 0.3.4 for `withdrawAll()` instead of `withdraw(<value>)`
-* Change from `fee` to `price`
-* pragma solidity 0.4.17 
+* Added `Cleared(bytes32 hash)`
 
 
 \******************************************************************************/
@@ -37,7 +35,7 @@ contract StringsMap is RegBase
 // Constants
 //
 
-    bytes32 constant public VERSION = "StringsMap v0.4.0";
+    bytes32 constant public VERSION = "StringsMap v0.4.1";
 
 //
 // State Variables
@@ -50,6 +48,7 @@ contract StringsMap is RegBase
 //
 
     event Stored(bytes32 indexed _hash);
+    event Cleared(bytes32 indexed _hash);
 
 //
 // Functions
@@ -84,8 +83,12 @@ contract StringsMap is RegBase
     /// @notice Clear `_string`. Must be string owner
     function clear(string _string)
         public
+        returns (bool)
     {
-        delete strings[keccak256(msg.sender, _string)];
+        bytes32 hash = keccak256(msg.sender, _string);
+        delete strings[hash];
+        Cleared(bytes32 hash);
+        return true;
     }
     
     /// @notice Clear string at hash key of `_hash`
@@ -97,6 +100,7 @@ contract StringsMap is RegBase
         bytes32 check = keccak256(msg.sender, strings[_hash]);
         require(_hash == check || msg.sender == owner);
         delete strings[_hash];
+        Cleared(bytes32 _hash);
         return true;
     }
 }
@@ -112,7 +116,7 @@ contract StringsMapFactory is Factory
     bytes32 constant public regName = "stringsmap";
     
     /// @return version string
-    bytes32 constant public VERSION = "StringsMapFactory v0.4.0";
+    bytes32 constant public VERSION = "StringsMapFactory v0.4.1";
 
 //
 // Functions

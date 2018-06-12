@@ -1,7 +1,7 @@
-// $import ("js/apis/BytesMapAPI.js");
+// $import ("js/apis/StringsMapAPI.js");
 
 
-const formatBytesMapEvents = (log, k) => {
+const formatStringsMapEvents = (log, k) => {
 	switch (log.event) {
 		case 'Stored': return Tilux.l(`
 			<h4>Stored</h4>
@@ -12,7 +12,8 @@ const formatBytesMapEvents = (log, k) => {
 	}
 }
 
-const bytesMap = {
+
+const stringsMap = {
 
 	minimal: (k) => {
 		return {
@@ -36,26 +37,22 @@ const bytesMap = {
 
 	advanced: (k) => {
 		const self =  new Tilux({
-			w: `<div id="{$@id}>"
+			w: `<div id="{$@id}">
 					{>(regBase.advanced(@k))}
 					<div class="layer">
-						<input id="key-input-{$@kAddr}" placeholder="Key" class="mono" type="text" value="{$@key}"></input>
-						<button id="clear-key-btn">Clear Key</button><br />
-					<select id="reg-in-name" class="ss-input" placeholder="Registrar">
-						{#(['option'], @types)}
-					</select>
-						<textarea id="text-area-{$@kAddr}" placeholder="Enter bytes to store">{$@bytes}</textarea><br />
-						<button id="set-btn">Set</button>
-						<button id="clear-bytes-btn">Clear Bytes</button>
+						<input id="get-hash" placeholder="Key" class="mono" type="text" value="{$@hash}"></input>
+						<button id="clear-hsh-btn">Clear Hash</button>
+						<textarea id="string" placeholder="Enter string to store">{$@string}</textarea><br />
+						<button id="store-btn">Store</button>
+						<button id="clear-str-btn">Clear String</button>
 					</div>
-					{>(events(@k, formatBytesMapEvents))}
+					{>(events(@k, formatStringsMapEvents))}
 				</div>`,
 			f: {
 				k: k,
 				kAddr: k.address,
-				key: '',
-				bytes: '',
-				types: [],
+				hash: '',
+				string: '',
 			},
 			s: {
 				"#get-hash": {
@@ -86,27 +83,23 @@ const bytesMap = {
 				},
 			}
 		});
+
 		return self;
 	}
 }
 
-bytesMap.getBytes = function(e, k) {
-	let types = "0x42ccbbbe";
-	let b = k.bytes(e.target.value);
-	let t = k.bytes(types+b.slice[2,10]);
-	$id("text-area-${k.address}").innerHTML = web3.toUtf8(t);
+
+resources["StringsMap v0.4.0"] = {
+	template: stringsMap,
+	interface: StringsMapContract,
+	docPath: "docs/StringsMapAPI.md"
 }
 
-resources["BytesMap v0.4.0"] = {
-	template: bytesMap,
-	interface: BytesMapContract,
-	docPath: "docs/BytesMapAPI.md"
-}
-
-resources["BytesMapFactory v0.4.0"] = {
+resources["StringsMapFactory v0.4.0"] = {
 	template: factory,
 	interface: FactoryContract,
-	docPath: "docs/BytesMapAPI.md"
+	docPath: "docs/StringsMapAPI.md"
 }
 
-console.log("ran BytesMap.js");
+
+console.log("ran StringsMap.js");
