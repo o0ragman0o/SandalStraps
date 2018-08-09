@@ -1,8 +1,8 @@
 /******************************************************************************\
 
 file:   Registrar.sol
-ver:    0.4.0
-updated:13-Nov-2017
+ver:    0.4.1
+updated:26-Jul-2018
 author: Darryl Morris (o0ragman0o)
 email:  o0ragman0o AT gmail.com
 
@@ -32,16 +32,9 @@ See MIT Licence for further details.
 
 Release Notes
 -------------
-* Using Factory 0.4.0 for `withdrawAll()` instead of `withdraw(<value>)`
-* Completely breaking change.  Renamed all getters to more intuitive identifiers
-* `indexedAddres()` to `addressByIndex()`
-* `namedIndex()` to `indexByName()`
-* `namedAddress` to `addressByName()`
-* `addressIndex()` to `indexByAddress()`
-* `indexName()` to `nameByIndex()`
-* `add()` to `register()`
-* removed improper ENS implementations of `addr()` and `content`
-* pragma solidity 0.4.17
+* changes `size` to `uint128
+* added `bool public isPublic` flag
+* added `setPublic(bool)` to set/clear public flag
 
 \******************************************************************************/
 
@@ -57,7 +50,7 @@ contract Registrar is RegBase
 //
 
     /// @return The contract version number
-    bytes32 constant public VERSION = "Registrar v0.4.0";
+    bytes32 constant public VERSION = "Registrar v0.4.1";
 
 //
 // State Variables
@@ -68,7 +61,12 @@ contract Registrar is RegBase
     // Indexing begins at 1 and not 0, so to avoid out-by-one errors, iterate
     // in the form:
     //     for(i = 1; i <= size; i++) {...}
-    uint public size;
+    uint128 public size;
+    
+    // Public access registration flag.
+    // `false` (default) allows only owner to register.
+    // 'true` allows public to register
+    bool public isPublic;
 
     /// @dev `indexAddress` maps Index -> Address
     /// @return The registered address at an index
@@ -85,8 +83,9 @@ contract Registrar is RegBase
     // Test if sender is the registrar owner or registered contract owner
     modifier onlyOwners(address _contract)
     {
-        require(msg.sender == owner ||
-            msg.sender == Owned(_contract).owner());
+        require(msg.sender == owner || 
+            (isPublic && msg.sender == Owned(_contract).owner())
+        );
         _;
     }
 
@@ -208,6 +207,18 @@ contract Registrar is RegBase
         Removed(regName, _addr);
         return true;
     }
+    
+    /// @notice Allow or deny public to register
+    /// @param _isPublic The public access flag
+    /// @return bool indicating call success
+    function setPublic(bool _isPublic)
+        public
+        returns (bool)
+    {
+        require(msg.sender == owner);
+        isPublic = _isPublic;
+        return true;
+    }
 }
 
 
@@ -218,7 +229,7 @@ contract RegistrarFactory is Factory
 //
 
     bytes32 constant public regName = "registrar";
-    bytes32 constant public VERSION = "RegistrarFactory v0.4.0";
+    bytes32 constant public VERSION = "RegistrarFactory v0.4.1";
 
 //
 // Functions

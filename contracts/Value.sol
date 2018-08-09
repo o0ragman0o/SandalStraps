@@ -1,8 +1,8 @@
 /******************************************************************************\
 
 file:   Value.sol
-ver:    0.4.1
-updated:3-Jun-2018
+ver:    0.4.2
+updated:26-Jul-2018
 author: Darryl Morris (o0ragman0o)
 email:  o0ragman0o AT gmail.com
 
@@ -22,8 +22,8 @@ See MIT Licence for further details.
 
 Release Notes
 -------------
-* added `units` and `function setUnits(bytes31)`
-* added `event Set(uint _value, uint8 _decimals, bytes32 _units)`
+* removed `setUnits()` and `setDecimals()`
+* added `setAll(uint _value, uint8 _decimals, bytes32 _units)`
 
 
 \******************************************************************************/
@@ -34,7 +34,7 @@ import "./Factory.sol";
 
 contract Value is RegBase
 {
-    bytes32 constant public VERSION = "Value v0.4.1";
+    bytes32 constant public VERSION = "Value v0.4.2";
     
     /// @return The current set value
     uint public value;
@@ -63,33 +63,24 @@ contract Value is RegBase
         returns (bool)
     {
         value = _value;
-        Set(uint _value, uint8 _decimals, bytes32 _units);
+        Set(_value, decimals, units);
         return true;
     }
 
     /// @notice Set the decimal places to `_decimal`
+    /// @param _value An unsigned integer
     /// @param _decimals A fixed point decimal place value
+    /// @param _units A 31 byte UTF8 units descriptor
     /// @return Boolean success value
-    function setDecimals(uint8 _decimals)
+    function setAll(uint _value, uint8 _decimals, bytes32 _units)
         public
         onlyOwner
         returns (bool)
     {
+        value = _value;
         decimals = _decimals;
-        Set(uint _value, uint8 _decimals, bytes32 _units);
-        return true;
-    }
-
-    /// @notice Set the decimal places to `_decimal`
-    /// @param _decimals A fixed point decimal place value
-    /// @return Boolean success value
-    function setUnits(bytes31 _units)
-        public
-        onlyOwner
-        returns (bool)
-    {
-        units = _units;
-        Set(uint _value, uint8 _decimals, bytes32 _units);
+        units = bytes31(_units);
+        Set(_value, _decimals, _units);
         return true;
     }
 }
@@ -105,7 +96,7 @@ contract ValueFactory is Factory
     bytes32 constant public regName = "value";
 
     /// @return version string
-    bytes32 constant public VERSION = "ValueFactory v0.4.1";
+    bytes32 constant public VERSION = "ValueFactory v0.4.2";
 
 //
 // Function

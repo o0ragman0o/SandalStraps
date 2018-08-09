@@ -1,8 +1,8 @@
 /******************************************************************************\
 
 file:   Factory.sol
-ver:    0.4.0
-updated:9-Oct-2017
+ver:    0.4.2
+updated:26-Jul-2018
 author: Darryl Morris (o0ragman0o)
 email:  o0ragman0o AT gmail.com
 
@@ -29,12 +29,11 @@ See MIT Licence for further details.
 
 Release Notes
 -------------
-* Changed from`withdaw(<value>)` to `withdrawAll()`
-* Set default function to be payable to recieve product commissions
-* Changed _fee to _price
+* Added public constant `uint8 decimals = 18` and `units = "ETH" for
+  compatibility with `Value 0.4.2` API
 \******************************************************************************/
 
-pragma solidity ^0.4.13;
+pragma solidity ^0.4.17;
 
 import "./RegBase.sol";
 
@@ -52,6 +51,9 @@ contract Factory is RegBase
     // the product's contract name appended with 'Factory` and the version
     // of the product, e.g for products "Foo":
     // bytes32 constant public VERSION "FooFactory 0.0.1";
+
+    uint8 constant public decimals = 18;
+    bytes31 constant public units ="ETH";
 
 //
 // State Variables
@@ -77,7 +79,7 @@ contract Factory is RegBase
 // Modifiers
 //
 
-    // To check that the correct fee has bene paid
+    // To check that the correct fee has been paid
     modifier pricePaid() {
         require(msg.value == value);
         if(msg.value > 0)

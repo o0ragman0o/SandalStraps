@@ -2,7 +2,7 @@
 
 file:   SandalStraps.sol
 ver:    0.4.1
-updated:30-May-18
+updated:26-Jul-18
 author: Darryl Morris (o0ragman0o)
 email:  o0ragman0o AT gmail.com
 
@@ -41,7 +41,8 @@ contract SandalStraps is
     bytes32 constant public VERSION = "SandalStraps v0.4.1";
 
     // Pre-deployed registrar factory address
-    address constant BOOTSTRAP = 0xDFd6dCCF429Fe7d4e8bba3f9c29c2C7CbA4f52EF;
+    // address constant BOOTSTRAP = 0xDFd6dCCF429Fe7d4e8bba3f9c29c2C7CbA4f52EF;
+    address constant BOOTSTRAP = 0x50653888D7f2D5A6c2B8D394B42d22197a75d109;
 
 //
 // State Variables
@@ -332,6 +333,7 @@ contract SandalStraps is
             RegistrarRegister("metaregistrar", registrar);
         }
         success_ = true;
+        // Returns in `preventReentry` modifier
     }
 
     /// @notice Create a new contract with name `_regName` from factory
@@ -383,6 +385,8 @@ contract SandalStraps is
         // Register The product contract. Will throw if product failed creation
         require(registrar.register(kAddr_));
         RegistrarRegister(_factory, kAddr_);
+
+        // Returns in `preventReentry` modifier
     }
     
     /// @notice Register contract at address `_kAddr` into registrar `_registrar`
@@ -467,6 +471,7 @@ contract SandalStraps is
     {
         require(_kAddr.call.value(msg.value)(_callData));
         success_ = true;
+        // Returns in `preventReentry` modifier
     }
 
     // Proxy functions to interact with contracts owned by the SandalStraps

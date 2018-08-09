@@ -66,7 +66,6 @@ contract RegBaseAbstract
 
 
 contract RegBase is Owned, RegBaseAbstract
-// contract RegBase is RegBaseAbstract
 {
 //
 // Constants
