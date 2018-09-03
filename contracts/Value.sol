@@ -1,8 +1,8 @@
 /******************************************************************************\
 
 file:   Value.sol
-ver:    0.4.2
-updated:26-Jul-2018
+ver:    0.4.3
+updated:16-Aug-2018
 author: Darryl Morris (o0ragman0o)
 email:  o0ragman0o AT gmail.com
 
@@ -22,19 +22,17 @@ See MIT Licence for further details.
 
 Release Notes
 -------------
-* removed `setUnits()` and `setDecimals()`
-* added `setAll(uint _value, uint8 _decimals, bytes32 _units)`
-
+* Using Solidity 0.4.24 syntax
 
 \******************************************************************************/
 
-pragma solidity ^0.4.17;
+pragma solidity ^0.4.24;
 
 import "./Factory.sol";
 
 contract Value is RegBase
 {
-    bytes32 constant public VERSION = "Value v0.4.2";
+    bytes32 constant public VERSION = "Value v0.4.3";
     
     /// @return The current set value
     uint public value;
@@ -47,7 +45,7 @@ contract Value is RegBase
 
     event Set(uint _value, uint8 _decimals, bytes32 _units);
 
-    function Value(address _creator, bytes32 _regName, address _owner)
+    constructor(address _creator, bytes32 _regName, address _owner)
         public
         RegBase(_creator, _regName, _owner)
     {
@@ -63,7 +61,7 @@ contract Value is RegBase
         returns (bool)
     {
         value = _value;
-        Set(_value, decimals, units);
+        emit Set(_value, decimals, units);
         return true;
     }
 
@@ -80,7 +78,7 @@ contract Value is RegBase
         value = _value;
         decimals = _decimals;
         units = bytes31(_units);
-        Set(_value, _decimals, _units);
+        emit Set(_value, _decimals, _units);
         return true;
     }
 }
@@ -96,7 +94,7 @@ contract ValueFactory is Factory
     bytes32 constant public regName = "value";
 
     /// @return version string
-    bytes32 constant public VERSION = "ValueFactory v0.4.2";
+    bytes32 constant public VERSION = "ValueFactory v0.4.3";
 
 //
 // Function
@@ -109,7 +107,7 @@ contract ValueFactory is Factory
     /// owner
     /// @dev On 0x0 value for _owner or _creator, ownership precedence is:
     /// `_owner` else `_creator` else msg.sender
-    function ValueFactory(address _creator, bytes32 _regName, address _owner)
+    constructor(address _creator, bytes32 _regName, address _owner)
         public
         Factory(_creator, regName, _owner)
     {
@@ -129,6 +127,6 @@ contract ValueFactory is Factory
         returns (address kAddr_)
     {
         kAddr_ = address(new Value(msg.sender, _regName, _owner));
-        Created(msg.sender, _regName, kAddr_);
+        emit Created(msg.sender, _regName, kAddr_);
     }
 }

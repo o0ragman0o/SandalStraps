@@ -1,38 +1,3 @@
-/******************************************************************************\
-
-file:   SandalStraps_coll.sol
-ver:    0.4.1
-updated:9-Aug-18
-author: Darryl Morris (o0ragman0o)
-email:  o0ragman0o AT gmail.com
-
-A collation of all SandalStraps related contracts for the purpose of deployment
-and post deployment validation.
-
-Contracts included are:
-* ReentryProtected
-* OwnedAbstract
-* Owned is OwnedAbstract
-* Owning is Owned
-* WithdrawableMinItfc
-* RegBaseAbstract
-* RegBase is Owned, RegBaseAbstract
-* Factory is Regbase
-* Registrar is RegBase
-* RegistrarFactory is Factory
-* Value is RegBase
-* ValueFactory is Factory
-* BytesMap is RegBase
-* BytesMapFactory is Factory
-* SandalStraps is ReentryProtected, RegBase, OwningItfc, WithdrawableMinItfc
-* SandalStrapsFactory is Factory
-
-\******************************************************************************/
-
-pragma solidity ^0.4.17;
-
-
-
 
 /******************************************************************************\
 
@@ -86,8 +51,8 @@ contract ReentryProtected
 /******************************************************************************\
 
 file:   Owned.sol
-ver:    0.3.1
-updated:21-Nov-2017
+ver:    0.3.2
+updated:16-Aug-2018
 author: Darryl Morris (o0ragman0o)
 email:  o0ragman0o AT gmail.com
 
@@ -102,10 +67,11 @@ See MIT Licence for further details.
 
 Change Log
 ----------
-* Added interface to `Owning.sol
+* Using Solidity 0.4.24 syntax
+* 
 \******************************************************************************/
 
-pragma solidity ^0.4.13;
+pragma solidity ^0.4.24;
 
 contract OwnedAbstract {
 
@@ -160,7 +126,7 @@ contract Owned is OwnedAbstract{
 		returns (bool)
 	{
 		newOwner = _newOwner;
-	    ChangeOwnerTo(_newOwner);
+	    emit ChangeOwnerTo(_newOwner);
 		return true;
 	}
 
@@ -169,7 +135,7 @@ contract Owned is OwnedAbstract{
 		returns (bool)
 	{
 		require(msg.sender == newOwner);
-	    ChangedOwner(owner, msg.sender);
+	    emit ChangedOwner(owner, msg.sender);
 		owner = msg.sender;
 		return true;
 	}
@@ -180,8 +146,8 @@ contract Owned is OwnedAbstract{
 /*****************************************************************************\
 
 file:   Owning.sol
-ver:    0.3.1
-updated:21-Nov-2017
+ver:    0.3.2
+updated:16-Aug-18
 author: Darryl Morris (o0ragman0o)
 email:  o0ragman0o AT gmail.com
 
@@ -196,10 +162,18 @@ See MIT Licence for further details.
 
 Change Log
 ----------
-* Added OwningItfc
+* Using Solidity 0.4.24 syntax
+* dropped use of `interface` and reverting back to abstract contracts. see:
+  https://github.com/ethereum/solidity/issues/4832
+* Changed from `Itfc` to `Abstract` suffix
+
 \*****************************************************************************/
 
-interface OwningItfc
+pragma solidity ^0.4.24;
+
+// import "./Owned.sol";
+
+contract OwningAbstract
 {
     /// @dev Logged when the contract accepts ownership of another contract.
     event ReceivedOwnership(address indexed _kAddr);
@@ -222,12 +196,41 @@ interface OwningItfc
 }
 
 
+contract Owning is Owned, OwningAbstract
+{
+    /// @notice Contract to recieve ownership of `_kAddr`
+    /// @param _kAddr An address of an `Owned` contract
+    function receiveOwnershipOf(address _kAddr)
+        public
+        returns (bool)
+     {
+        require(OwnedAbstract(_kAddr).acceptOwnership());
+        emit ReceivedOwnership(_kAddr);
+        return true;
+     }
+
+    /// @notice Change the owner of the owned contract `_kAddr` to `_owner`
+    /// @param _kAddr The address of the owned contract
+    /// @param _owner The address of the new owner
+    /// @dev could be used to migrate to an upgraded SandalStraps
+    /// @return bool value indicating success
+    function changeOwnerOf(address _kAddr, address _owner)
+        public
+        onlyOwner
+        returns (bool)
+    {
+        require(Owned(_kAddr).changeOwner(_owner));
+        emit ChangeOwnerOf(_kAddr, _owner);
+        return true;
+    }
+}
+
 
 /******************************************************************************\
 
 file:   Withdrawable.sol
-ver:    0.4.2
-updated:25-Oct-2017
+ver:    0.4.3
+updated:16-Aug-2018
 author: Darryl Morris (o0ragman0o)
 email:  o0ragman0o AT gmail.com
 
@@ -243,16 +246,19 @@ See MIT Licence for further details.
 
 Change Log
 ----------
-* removed `acceptingDeposits` in accordance to draft EIP disallowing reverting
-upon deposit.
+* Using Solidity 0.4.24 syntax
+* dropped use of `interface` and reverting back to abstract contracts. see:
+  https://github.com/ethereum/solidity/issues/4832
+* Changed from `Itfc` to `Abstract` suffix
+
 
 \******************************************************************************/
 
-pragma solidity ^0.4.13;
+pragma solidity ^0.4.24;
 
 // The minimum interface supporting pull payments with deposits and withdrawl
 // events
-interface WithdrawableMinItfc
+contract WithdrawableMinAbstract
 {
 //
 // Events
@@ -275,11 +281,12 @@ interface WithdrawableMinItfc
 }
 
 
+
 /******************************************************************************\
 
 file:   RegBase.sol
-ver:    0.4.0
-updated:8-Nov-2017
+ver:    0.4.3
+updated:16-Aug-2017
 author: Darryl Morris (o0ragman0o)
 email:  o0ragman0o AT gmail.com
 
@@ -299,13 +306,15 @@ See MIT Licence for further details.
 <https://opensource.org/licenses/MIT>.
 
 Release notes:
-* Frameworking changing to Factory v0.4.0 usage
-* Importing and inheriting from `Owning` 
-* pragma solidity 0.4.17 
+* Using Solidity 0.4.24 syntax
 
 \******************************************************************************/
 
-pragma solidity ^0.4.17;
+
+pragma solidity ^0.4.24;
+
+// import "https://github.com/o0ragman0o/Owned/contracts/Owned.sol";
+
 
 contract RegBaseAbstract
 {
@@ -345,7 +354,7 @@ contract RegBase is Owned, RegBaseAbstract
 // Constants
 //
 
-    bytes32 constant public VERSION = "RegBase v0.4.0";
+    bytes32 constant public VERSION = "RegBase v0.4.3";
 
 //
 // Functions
@@ -358,7 +367,7 @@ contract RegBase is Owned, RegBaseAbstract
     /// owner
     /// @dev On 0x0 value for owner, ownership precedence is:
     /// `_owner` else `_creator` else msg.sender
-    function RegBase(address _creator, bytes32 _regName, address _owner)
+    constructor(address _creator, bytes32 _regName, address _owner)
         public
     {
         require(_regName != 0x0);
@@ -383,17 +392,16 @@ contract RegBase is Owned, RegBaseAbstract
         returns (bool)
     {
         resource = _resource;
-        ChangedResource(_resource);
+        emit ChangedResource(_resource);
         return true;
     }
 }
 
-
 /******************************************************************************\
 
 file:   Factory.sol
-ver:    0.4.2
-updated:26-Jul-2018
+ver:    0.4.3
+updated:16-Aug-2018
 author: Darryl Morris (o0ragman0o)
 email:  o0ragman0o AT gmail.com
 
@@ -420,11 +428,13 @@ See MIT Licence for further details.
 
 Release Notes
 -------------
-* Added public constant `uint8 decimals = 18` and `units = "ETH" for
-  compatibility with `Value 0.4.2` API
+* Using solidity 0.4.24 syntax
+
 \******************************************************************************/
 
-pragma solidity ^0.4.17;
+pragma solidity ^0.4.24;
+
+// import "./RegBase.sol";
 
 contract Factory is RegBase
 {
@@ -473,7 +483,7 @@ contract Factory is RegBase
         require(msg.value == value);
         if(msg.value > 0)
             // Log deposit if fee was paid
-            Deposit(msg.sender, msg.value);
+            emit Deposit(msg.sender, msg.value);
         _;
     }
 
@@ -488,7 +498,7 @@ contract Factory is RegBase
     /// owner
     /// @dev On 0x0 value for _owner or _creator, ownership precedence is:
     /// `_owner` else `_creator` else msg.sender
-    function Factory(address _creator, bytes32 _regName, address _owner)
+    constructor(address _creator, bytes32 _regName, address _owner)
         public
         RegBase(_creator, _regName, _owner)
     {
@@ -499,7 +509,7 @@ contract Factory is RegBase
         public
         payable
     {
-        Deposit(msg.sender, msg.value);
+        emit Deposit(msg.sender, msg.value);
     }
 
     /// @notice Set the product creation fee
@@ -518,8 +528,8 @@ contract Factory is RegBase
         public
         returns (bool)
     {
-        Withdrawal(msg.sender, owner, this.balance);
-        owner.transfer(this.balance);
+        emit Withdrawal(msg.sender, owner, address(this).balance);
+        owner.transfer(address(this).balance);
         return true;
     }
 
@@ -533,57 +543,12 @@ contract Factory is RegBase
         public payable returns(address kAddr_);
 }
 
-/* Example implimentation of `createNew()` for a deriving factory
-
-    function createNew(bytes32 _regName, address _owner)
-        payable
-        feePaid
-        returns (address kAddr_)
-    {
-        require(_regName != 0x0);
-        address kAddr_ = address(new Foo(msg.sender, _regName, _owner));
-        Created(msg.sender, _regName, kAddr);
-    }
-
-Example product contract with `Factory` compiant constructor and `Registrar`
-compliant `regName`.
-
-The owner will be the caller by default if the `_owner` value is `0x0`.
-
-If the contract requires initialization that would normally be done in a
-constructor, then a `init()` function can be used instead post deployment.
-
-    contract Foo is RegBase
-    {
-        bytes32 constant public VERSION = "Foo v0.0.1";
-        uint val;
-        uint8 public __initFuse = 1;
-        
-        function Foo(address _creator, bytes32 _regName, address _owner)
-            RegBase(_creator, _regName, _owner)
-        {
-            // put non-parametric constructor code here.
-        }
-        
-        function _init(uint _val)
-        {
-            require(__initFuse == 1);
-
-            // put parametric constructor code here and call _init() post 
-            // deployment
-            val = _val;
-            delete __initFuse;
-        }
-    }
-
-*/
-
 
 /******************************************************************************\
 
 file:   Registrar.sol
-ver:    0.4.1
-updated:26-Jul-2018
+ver:    0.4.3
+updated:16-Aug-2018
 author: Darryl Morris (o0ragman0o)
 email:  o0ragman0o AT gmail.com
 
@@ -613,13 +578,13 @@ See MIT Licence for further details.
 
 Release Notes
 -------------
-* changes `size` to `uint128
-* added `bool public isPublic` flag
-* added `setPublic(bool)` to set/clear public flag
+* Using Solidity 0.4.24 syntax
 
 \******************************************************************************/
 
-pragma solidity ^0.4.17;
+pragma solidity ^0.4.24;
+
+// import "./Factory.sol";
 
 contract Registrar is RegBase
 {
@@ -629,7 +594,7 @@ contract Registrar is RegBase
 //
 
     /// @return The contract version number
-    bytes32 constant public VERSION = "Registrar v0.4.1";
+    bytes32 constant public VERSION = "Registrar v0.4.3";
 
 //
 // State Variables
@@ -689,7 +654,7 @@ contract Registrar is RegBase
     /// owner
     /// @dev On 0x0 value for _owner or _creator, ownership precedence is:
     /// `_owner` else `_creator` else msg.sender
-    function Registrar(address _creator, bytes32 _regName, address _owner)
+    constructor(address _creator, bytes32 _regName, address _owner)
         public
         RegBase(_creator, _regName, _owner)
     {
@@ -767,7 +732,7 @@ contract Registrar is RegBase
         // Register the contract
         addressByIndex[idx] = _addr;
         indexByName[regName] = idx;
-        Registered(regName, _addr);
+        emit Registered(regName, _addr);
         return true;
     }
     
@@ -783,7 +748,7 @@ contract Registrar is RegBase
         bytes32 regName = RegBase(_addr).regName();
         delete addressByIndex[indexByAddress(_addr)];
         delete indexByName[regName];
-        Removed(regName, _addr);
+        emit Removed(regName, _addr);
         return true;
     }
     
@@ -808,7 +773,7 @@ contract RegistrarFactory is Factory
 //
 
     bytes32 constant public regName = "registrar";
-    bytes32 constant public VERSION = "RegistrarFactory v0.4.1";
+    bytes32 constant public VERSION = "RegistrarFactory v0.4.3";
 
 //
 // Functions
@@ -821,7 +786,7 @@ contract RegistrarFactory is Factory
     /// owner
     /// @dev On 0x0 value for _owner or _creator, ownership precedence is:
     /// `_owner` else `_creator` else msg.sender
-    function RegistrarFactory(address _creator, bytes32 _regName, address _owner)
+    constructor(address _creator, bytes32 _regName, address _owner)
         public
         Factory(_creator, regName, _owner)
     {
@@ -841,7 +806,7 @@ contract RegistrarFactory is Factory
         returns(address kAddr_)
     {
         kAddr_ = address(new Registrar(msg.sender, _regName, _owner));
-        Created(msg.sender, _regName, kAddr_);
+        emit Created(msg.sender, _regName, kAddr_);
     }
 }
 
@@ -850,8 +815,8 @@ contract RegistrarFactory is Factory
 /******************************************************************************\
 
 file:   BytesMap.sol
-ver:    0.4.1
-updated:3-Jun-2018
+ver:    0.4.3
+updated:16-Aug-2018
 author: Darryl Morris (o0ragman0o)
 email:  o0ragman0o AT gmail.com
 
@@ -872,12 +837,14 @@ See MIT Licence for further details.
 
 Release Notes
 -------------
-* Added `event Cleared(bytes32 indexed _hash)`
+* Solidity 0.4.24 syntax
 
 
 \******************************************************************************/
 
-pragma solidity ^0.4.17;
+pragma solidity ^0.4.24;
+
+// import "./Factory.sol";
 
 contract BytesMap is RegBase
 {
@@ -885,7 +852,7 @@ contract BytesMap is RegBase
 // Constants
 //
 
-    bytes32 constant public VERSION = "BytesMap v0.4.1";
+    bytes32 constant public VERSION = "BytesMap v0.4.3";
     bytes32 constant TYPE_MASK =
         0x00000000ffffffffffffffffffffffffffffffffffffffffffffffffffffffff;
 
@@ -913,7 +880,7 @@ contract BytesMap is RegBase
     /// owner
     /// @dev On 0x0 value for _owner or _creator, ownership precedence is:
     /// `_owner` else `_creator` else msg.sender
-    function BytesMap(address _creator, bytes32 _regName, address _owner)
+    constructor(address _creator, bytes32 _regName, address _owner)
         public
         RegBase(_creator, _regName, _owner)
     {
@@ -931,9 +898,9 @@ contract BytesMap is RegBase
         public
         returns (bytes32 hash_)
     {
-        hash_ = keccak256(msg.sender, _bytes) & TYPE_MASK | _type;
+        hash_ = keccak256(abi.encodePacked(msg.sender, _bytes)) & TYPE_MASK | _type;
         bytesMap[hash_] = _bytes;
-        Stored(hash_);
+        emit Stored(hash_);
     }
     
     /// @notice Clear `_bytes`. Must be bytes owner or contract owner
@@ -941,9 +908,9 @@ contract BytesMap is RegBase
         public
         returns (bool)
     {
-        bytes32 hash = keccak256(msg.sender, _bytes) & TYPE_MASK | _type;
+        bytes32 hash = keccak256(abi.encodePacked(msg.sender, _bytes)) & TYPE_MASK | _type;
         delete bytesMap[hash];
-        Cleared(hash);
+        emit Cleared(hash);
         return true;
     }
     
@@ -953,11 +920,11 @@ contract BytesMap is RegBase
         public
         returns (bool)
     {
-        bytes32 check = keccak256(msg.sender, bytesMap[_hash]) & TYPE_MASK;
+        bytes32 check = keccak256(abi.encodePacked(msg.sender, bytesMap[_hash])) & TYPE_MASK;
         bytes32 hash = _hash & TYPE_MASK;
         require(hash == check || msg.sender == owner);
         delete bytesMap[_hash];
-        Cleared(hash);
+        emit Cleared(_hash);
         return true;
     }
 }
@@ -973,7 +940,7 @@ contract BytesMapFactory is Factory
     bytes32 constant public regName = "bytesmap";
     
     /// @return version string
-    bytes32 constant public VERSION = "BytesMapFactory v0.4.1";
+    bytes32 constant public VERSION = "BytesMapFactory v0.4.3";
 
 //
 // Functions
@@ -986,7 +953,7 @@ contract BytesMapFactory is Factory
     /// owner
     /// @dev On 0x0 value for _owner or _creator, ownership precedence is:
     /// `_owner` else `_creator` else msg.sender
-    function BytesMapFactory(
+    constructor(
             address _creator, bytes32 _regName, address _owner)
         public
         Factory(_creator, regName, _owner)
@@ -1007,7 +974,7 @@ contract BytesMapFactory is Factory
         returns (address kAddr_)
     {
         kAddr_ = address(new BytesMap(msg.sender, _regName, _owner));
-        Created(msg.sender, _regName, kAddr_);
+        emit Created(msg.sender, _regName, kAddr_);
     }
 }
 
@@ -1015,8 +982,8 @@ contract BytesMapFactory is Factory
 /******************************************************************************\
 
 file:   Value.sol
-ver:    0.4.2
-updated:26-Jul-2018
+ver:    0.4.3
+updated:16-Aug-2018
 author: Darryl Morris (o0ragman0o)
 email:  o0ragman0o AT gmail.com
 
@@ -1036,17 +1003,17 @@ See MIT Licence for further details.
 
 Release Notes
 -------------
-* removed `setUnits()` and `setDecimals()`
-* added `setAll(uint _value, uint8 _decimals, bytes32 _units)`
-
+* Using Solidity 0.4.24 syntax
 
 \******************************************************************************/
 
-pragma solidity ^0.4.17;
+pragma solidity ^0.4.24;
+
+// import "./Factory.sol";
 
 contract Value is RegBase
 {
-    bytes32 constant public VERSION = "Value v0.4.2";
+    bytes32 constant public VERSION = "Value v0.4.3";
     
     /// @return The current set value
     uint public value;
@@ -1059,7 +1026,7 @@ contract Value is RegBase
 
     event Set(uint _value, uint8 _decimals, bytes32 _units);
 
-    function Value(address _creator, bytes32 _regName, address _owner)
+    constructor(address _creator, bytes32 _regName, address _owner)
         public
         RegBase(_creator, _regName, _owner)
     {
@@ -1075,7 +1042,7 @@ contract Value is RegBase
         returns (bool)
     {
         value = _value;
-        Set(_value, decimals, units);
+        emit Set(_value, decimals, units);
         return true;
     }
 
@@ -1092,7 +1059,7 @@ contract Value is RegBase
         value = _value;
         decimals = _decimals;
         units = bytes31(_units);
-        Set(_value, _decimals, _units);
+        emit Set(_value, _decimals, _units);
         return true;
     }
 }
@@ -1108,7 +1075,7 @@ contract ValueFactory is Factory
     bytes32 constant public regName = "value";
 
     /// @return version string
-    bytes32 constant public VERSION = "ValueFactory v0.4.2";
+    bytes32 constant public VERSION = "ValueFactory v0.4.3";
 
 //
 // Function
@@ -1121,7 +1088,7 @@ contract ValueFactory is Factory
     /// owner
     /// @dev On 0x0 value for _owner or _creator, ownership precedence is:
     /// `_owner` else `_creator` else msg.sender
-    function ValueFactory(address _creator, bytes32 _regName, address _owner)
+    constructor(address _creator, bytes32 _regName, address _owner)
         public
         Factory(_creator, regName, _owner)
     {
@@ -1141,7 +1108,7 @@ contract ValueFactory is Factory
         returns (address kAddr_)
     {
         kAddr_ = address(new Value(msg.sender, _regName, _owner));
-        Created(msg.sender, _regName, kAddr_);
+        emit Created(msg.sender, _regName, kAddr_);
     }
 }
 
@@ -1150,8 +1117,8 @@ contract ValueFactory is Factory
 /******************************************************************************\
 
 file:   SandalStraps.sol
-ver:    0.4.1
-updated:26-Jul-18
+ver:    0.4.3
+updated:16-Aug-18
 author: Darryl Morris (o0ragman0o)
 email:  o0ragman0o AT gmail.com
 
@@ -1164,29 +1131,33 @@ See MIT Licence for further details.
 <https://opensource.org/licenses/MIT>.
 
 Release Notes:
-* Fixed incorrect explicit return bug in `preventReentry` modified functions.
-  Proper method is to use named return parameters
-
+* using Solidity 0.4.24 syntax
 \******************************************************************************/
 
-pragma solidity ^0.4.17;
+pragma solidity ^0.4.24;
 
+// import "https://github.com/o0ragman0o/Owned/contracts/Owning.sol";
+// import "https://github.com/o0ragman0o/Withdrawable/contracts/Withdrawable.sol";
+// import "https://github.com/o0ragman0o/ReentryProtected/ReentryProtected.sol";
+// import "./Registrar.sol";
+// import "./Value.sol";
 
 contract SandalStraps is
     ReentryProtected,
     RegBase,
-    OwningItfc,
-    WithdrawableMinItfc
+    OwningAbstract,
+    WithdrawableMinAbstract
 {
 //
 // Constants
 //
 
-    bytes32 constant public VERSION = "SandalStraps v0.4.1";
+    bytes32 constant public VERSION = "SandalStraps v0.4.3";
 
     // Pre-deployed registrar factory address
     // address constant BOOTSTRAP = 0xDFd6dCCF429Fe7d4e8bba3f9c29c2C7CbA4f52EF;
     address constant BOOTSTRAP = 0x50653888D7f2D5A6c2B8D394B42d22197a75d109;
+    // address constant BOOTSTRAP = 0x692a70d2e424a56d2c6c27aa97d1a86395877b3a;
 
 //
 // State Variables
@@ -1235,13 +1206,13 @@ contract SandalStraps is
     /// owner
     /// @dev On 0x0 value for _owner or _creator, ownership precedence is:
     /// `_owner` else `_creator` else msg.sender
-    function SandalStraps(address _creator, bytes32 _regName, address _owner)
+    constructor(address _creator, bytes32 _regName, address _owner)
         public
         RegBase(_creator, _regName, _owner)
     {
     	creator = _creator;
         metaRegistrar = Registrar(bootstrap.createNew("metaregistrar", this));
-        ProductCreated(msg.sender,
+        emit ProductCreated(msg.sender,
             "registrar",
             "metaregistrar",            
             address(metaRegistrar));
@@ -1259,7 +1230,7 @@ contract SandalStraps is
         public
         payable
     {
-        Deposit(msg.sender, msg.value);
+        emit Deposit(msg.sender, msg.value);
     }
     
 /* Public Constant functions */
@@ -1371,26 +1342,33 @@ contract SandalStraps is
 
 /* Public non-constant Functions */ 
 
-    /// @dev Creates and registers 'factories' and 'registrar' registrars
-    function _init1()
+    function _init()
         public
         onlyOwner
         noReentry
+        returns(bool)
+    {
+        require(__initFuse > 0);
+        if (__initFuse == 1) return _init1();
+        if (__initFuse == 2) return _init2();
+    }
+    
+    /// @dev Creates and registers 'factories' and 'registrar' registrars
+    function _init1()
+        internal
         returns (bool)
     {
-        require(1 == __initFuse);
-        
         // Create and add 'factories' registrar to metaregistrar
         address factoriesReg = bootstrap.createNew("factories", this);
-        ProductCreated(this, "registrar", "factories", factoriesReg);
+        emit ProductCreated(this, "registrar", "factories", factoriesReg);
         metaRegistrar.register(factoriesReg);
-        RegistrarRegister("metaregistrar", factoriesReg);
+        emit RegistrarRegister("metaregistrar", factoriesReg);
         
         // Create and register the 'registrar' registrar
         address registrarReg = bootstrap.createNew("registrar", this);
-        ProductCreated(this, "registrar", "registrar", registrarReg);
+        emit ProductCreated(this, "registrar", "registrar", registrarReg);
         metaRegistrar.register(registrarReg);
-        RegistrarRegister("metaregistrar", registrarReg);
+        emit RegistrarRegister("metaregistrar", registrarReg);
 
         __initFuse++;
         return true;
@@ -1399,28 +1377,24 @@ contract SandalStraps is
     /// @dev Registers own and metaregistrar addresses in metaRegistrar.
     /// Registers bootstrap factory address in factories
     function _init2()
-        public
-        onlyOwner
-        noReentry
+        internal
         returns (bool)
     {
-        require(2 == __initFuse);
-        
         // Add this to metaregistrar
         metaRegistrar.register(this);
-        RegistrarRegister("metaregistrar", this);
+        emit RegistrarRegister("metaregistrar", this);
         
         // Add 'metaregistrar' to metaregistrar
         metaRegistrar.register(metaRegistrar);
-        RegistrarRegister("metaregistrar", metaRegistrar);
+        emit RegistrarRegister("metaregistrar", metaRegistrar);
         
         // Register the bootstrap registrar factory in 'factories' registrar
         Registrar(metaRegistrar.addressByName("factories")).register(BOOTSTRAP);
-        RegistrarRegister("factories", BOOTSTRAP);
+        emit RegistrarRegister("factories", BOOTSTRAP);
         
         delete __initFuse;
         return true;
-    }
+    }    
     
     /// @notice Register a Sandalstraps compliant fractory at address `_kAddr`
     /// @param _kAddr The address of a SandalStraps compiant factory
@@ -1434,7 +1408,7 @@ contract SandalStraps is
         preventReentry
         returns (bool success_)
     {
-        if (msg.value > 0) { Deposit(msg.sender, msg.value); }
+        if (msg.value > 0) { emit Deposit(msg.sender, msg.value); }
 
         // Get the factories registrar
         address factories = metaRegistrar.addressByName("factories");
@@ -1460,21 +1434,21 @@ contract SandalStraps is
         bytes32 factoryName = RegBase(_kAddr).regName();
         require(factoryName != 0x0);
         Registrar(factories).register(_kAddr);
-        RegistrarRegister("factories", _kAddr);
+        emit RegistrarRegister("factories", _kAddr);
 
         // Create a registrar of same factory name if one doesn't exist
         if (0x0 == Registrar(registrars).addressByName(factoryName)) {
-            if (price > 0) { Withdrawal(msg.sender, regFactory, price); }
+            if (price > 0) { emit Withdrawal(msg.sender, regFactory, price); }
 
             address registrar = Factory(regFactory)
                     .createNew
                     .value(price)(factoryName, this);
-            ProductCreated(this, "registrar", factoryName, registrar);
+            emit ProductCreated(this, "registrar", factoryName, registrar);
             // Register the new registrar in the registrars ragistrar
             Registrar(registrars).register(registrar);
-            RegistrarRegister("registrar", registrar);
+            emit RegistrarRegister("registrar", registrar);
             metaRegistrar.register(registrar);
-            RegistrarRegister("metaregistrar", registrar);
+            emit RegistrarRegister("metaregistrar", registrar);
         }
         success_ = true;
         // Returns in `preventReentry` modifier
@@ -1498,7 +1472,7 @@ contract SandalStraps is
         // Only owner can use reserved regNames
         require(msg.sender == owner || !reservedNames[_regName]);
         
-        if (msg.value > 0) { Deposit(msg.sender, msg.value); }
+        if (msg.value > 0) { emit Deposit(msg.sender, msg.value); }
         
         _prodOwner = _prodOwner != 0x0 ? _prodOwner : msg.sender;
         
@@ -1522,13 +1496,13 @@ contract SandalStraps is
         require(msg.value == fullPrice);
         
         // Create the product contract
-        if (price > 0) { Withdrawal(msg.sender, kAddr_, price); }
+        if (price > 0) { emit Withdrawal(msg.sender, kAddr_, price); }
         kAddr_ = factory.createNew.value(price)(_regName, _prodOwner);
-        ProductCreated(msg.sender, _factory, _regName, kAddr_);
+        emit ProductCreated(msg.sender, _factory, _regName, kAddr_);
 
         // Register The product contract. Will throw if product failed creation
         require(registrar.register(kAddr_));
-        RegistrarRegister(_factory, kAddr_);
+        emit RegistrarRegister(_factory, kAddr_);
 
         // Returns in `preventReentry` modifier
     }
@@ -1545,7 +1519,7 @@ contract SandalStraps is
     {
         Registrar registrar = Registrar(metaRegistrar.addressByName(_registrar));
         require(registrar.register(_kAddr));
-        RegistrarRegister(_registrar, _kAddr);
+        emit RegistrarRegister(_registrar, _kAddr);
         
         return true;
     }
@@ -1562,7 +1536,7 @@ contract SandalStraps is
     {
         Registrar registrar = Registrar(metaRegistrar.addressByName(_registrar));
         require(registrar.remove(_kAddr));
-        RegistrarRemove(_registrar, _kAddr);
+        emit RegistrarRemove(_registrar, _kAddr);
 
         return true; 	
     }
@@ -1595,8 +1569,8 @@ contract SandalStraps is
         // If no wallet specified, funds go to creator (typically the factory)
         if (0x0 == wallet) wallet = creator;
 
-        Withdrawal(msg.sender, wallet, this.balance);
-        wallet.transfer(this.balance);
+        emit Withdrawal(msg.sender, wallet, address(this).balance);
+        wallet.transfer(address(this).balance);
 
         return true;
     }
@@ -1624,12 +1598,12 @@ contract SandalStraps is
     /// @notice Contract to recieve ownership of `_kAddr`
     /// @param _kAddr An address of an `Owned` contract
     function receiveOwnershipOf(address _kAddr)
-         public
-         returns (bool)
+        public
+        returns (bool)
      {
-         require(OwnedAbstract(_kAddr).acceptOwnership());
-         ReceivedOwnership(_kAddr);
-         return true;
+        require(OwnedAbstract(_kAddr).acceptOwnership());
+        emit ReceivedOwnership(_kAddr);
+        return true;
      }
 
     /// @notice Change the owner of the owned contract `_kAddr` to `_owner`
@@ -1643,7 +1617,7 @@ contract SandalStraps is
         returns (bool)
     {
         require(OwnedAbstract(_kAddr).changeOwner(_owner));
-        ChangeOwnerOf(_kAddr, _owner);
+        emit ChangeOwnerOf(_kAddr, _owner);
         return true;
     }
     /// @notice Change the resource of owned contract `_kAddr` to `_resource`
@@ -1685,7 +1659,7 @@ contract SandalStrapsFactory is Factory
     bytes32 constant public regName = "sandalstraps";
 
     /// @return version string
-    bytes32 constant public VERSION = "SandalStrapsFactory v0.4.1";
+    bytes32 constant public VERSION = "SandalStrapsFactory v0.4.3";
 
 //
 // Functions
@@ -1698,8 +1672,7 @@ contract SandalStrapsFactory is Factory
     /// owner
     /// @dev On 0x0 value for _owner or _creator, ownership precedence is:
     /// `_owner` else `_creator` else msg.sender
-    function SandalStrapsFactory(
-        address _creator, bytes32 _regName, address _owner)
+    constructor(address _creator, bytes32 _regName, address _owner)
         public
         Factory(_creator, regName, _owner)
     {
@@ -1723,6 +1696,6 @@ contract SandalStrapsFactory is Factory
                 _regName,
                 _owner != 0x0 ? owner : msg.sender)
             );
-        Created(this, _regName, kAddr_);
+        emit Created(this, _regName, kAddr_);
     }
 }

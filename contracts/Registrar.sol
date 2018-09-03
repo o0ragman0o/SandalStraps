@@ -1,8 +1,8 @@
 /******************************************************************************\
 
 file:   Registrar.sol
-ver:    0.4.1
-updated:26-Jul-2018
+ver:    0.4.3
+updated:16-Aug-2018
 author: Darryl Morris (o0ragman0o)
 email:  o0ragman0o AT gmail.com
 
@@ -32,13 +32,11 @@ See MIT Licence for further details.
 
 Release Notes
 -------------
-* changes `size` to `uint128
-* added `bool public isPublic` flag
-* added `setPublic(bool)` to set/clear public flag
+* Using Solidity 0.4.24 syntax
 
 \******************************************************************************/
 
-pragma solidity ^0.4.17;
+pragma solidity ^0.4.24;
 
 import "./Factory.sol";
 
@@ -50,7 +48,7 @@ contract Registrar is RegBase
 //
 
     /// @return The contract version number
-    bytes32 constant public VERSION = "Registrar v0.4.1";
+    bytes32 constant public VERSION = "Registrar v0.4.3";
 
 //
 // State Variables
@@ -110,7 +108,7 @@ contract Registrar is RegBase
     /// owner
     /// @dev On 0x0 value for _owner or _creator, ownership precedence is:
     /// `_owner` else `_creator` else msg.sender
-    function Registrar(address _creator, bytes32 _regName, address _owner)
+    constructor(address _creator, bytes32 _regName, address _owner)
         public
         RegBase(_creator, _regName, _owner)
     {
@@ -188,7 +186,7 @@ contract Registrar is RegBase
         // Register the contract
         addressByIndex[idx] = _addr;
         indexByName[regName] = idx;
-        Registered(regName, _addr);
+        emit Registered(regName, _addr);
         return true;
     }
     
@@ -204,7 +202,7 @@ contract Registrar is RegBase
         bytes32 regName = RegBase(_addr).regName();
         delete addressByIndex[indexByAddress(_addr)];
         delete indexByName[regName];
-        Removed(regName, _addr);
+        emit Removed(regName, _addr);
         return true;
     }
     
@@ -229,7 +227,7 @@ contract RegistrarFactory is Factory
 //
 
     bytes32 constant public regName = "registrar";
-    bytes32 constant public VERSION = "RegistrarFactory v0.4.1";
+    bytes32 constant public VERSION = "RegistrarFactory v0.4.3";
 
 //
 // Functions
@@ -242,7 +240,7 @@ contract RegistrarFactory is Factory
     /// owner
     /// @dev On 0x0 value for _owner or _creator, ownership precedence is:
     /// `_owner` else `_creator` else msg.sender
-    function RegistrarFactory(address _creator, bytes32 _regName, address _owner)
+    constructor(address _creator, bytes32 _regName, address _owner)
         public
         Factory(_creator, regName, _owner)
     {
@@ -262,6 +260,6 @@ contract RegistrarFactory is Factory
         returns(address kAddr_)
     {
         kAddr_ = address(new Registrar(msg.sender, _regName, _owner));
-        Created(msg.sender, _regName, kAddr_);
+        emit Created(msg.sender, _regName, kAddr_);
     }
 }

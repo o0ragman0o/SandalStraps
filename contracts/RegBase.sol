@@ -1,8 +1,8 @@
 /******************************************************************************\
 
 file:   RegBase.sol
-ver:    0.4.0
-updated:8-Nov-2017
+ver:    0.4.3
+updated:16-Aug-2017
 author: Darryl Morris (o0ragman0o)
 email:  o0ragman0o AT gmail.com
 
@@ -22,13 +22,12 @@ See MIT Licence for further details.
 <https://opensource.org/licenses/MIT>.
 
 Release notes:
-* Frameworking changing to Factory v0.4.0 usage
-* Importing and inheriting from `Owning` 
-* pragma solidity 0.4.17 
+* Using Solidity 0.4.24 syntax
 
 \******************************************************************************/
 
-pragma solidity ^0.4.17;
+
+pragma solidity ^0.4.24;
 
 import "https://github.com/o0ragman0o/Owned/contracts/Owned.sol";
 
@@ -71,7 +70,7 @@ contract RegBase is Owned, RegBaseAbstract
 // Constants
 //
 
-    bytes32 constant public VERSION = "RegBase v0.4.0";
+    bytes32 constant public VERSION = "RegBase v0.4.3";
 
 //
 // Functions
@@ -84,7 +83,7 @@ contract RegBase is Owned, RegBaseAbstract
     /// owner
     /// @dev On 0x0 value for owner, ownership precedence is:
     /// `_owner` else `_creator` else msg.sender
-    function RegBase(address _creator, bytes32 _regName, address _owner)
+    constructor(address _creator, bytes32 _regName, address _owner)
         public
     {
         require(_regName != 0x0);
@@ -109,7 +108,7 @@ contract RegBase is Owned, RegBaseAbstract
         returns (bool)
     {
         resource = _resource;
-        ChangedResource(_resource);
+        emit ChangedResource(_resource);
         return true;
     }
 }

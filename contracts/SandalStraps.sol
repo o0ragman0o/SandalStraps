@@ -1,8 +1,8 @@
 /******************************************************************************\
 
 file:   SandalStraps.sol
-ver:    0.4.1
-updated:26-Jul-18
+ver:    0.4.3
+updated:16-Aug-18
 author: Darryl Morris (o0ragman0o)
 email:  o0ragman0o AT gmail.com
 
@@ -15,12 +15,10 @@ See MIT Licence for further details.
 <https://opensource.org/licenses/MIT>.
 
 Release Notes:
-* Fixed incorrect explicit return bug in `preventReentry` modified functions.
-  Proper method is to use named return parameters
-
+* using Solidity 0.4.24 syntax
 \******************************************************************************/
 
-pragma solidity ^0.4.17;
+pragma solidity ^0.4.24;
 
 import "https://github.com/o0ragman0o/Owned/contracts/Owning.sol";
 import "https://github.com/o0ragman0o/Withdrawable/contracts/Withdrawable.sol";
@@ -31,18 +29,19 @@ import "./Value.sol";
 contract SandalStraps is
     ReentryProtected,
     RegBase,
-    OwningItfc,
-    WithdrawableMinItfc
+    OwningAbstract,
+    WithdrawableMinAbstract
 {
 //
 // Constants
 //
 
-    bytes32 constant public VERSION = "SandalStraps v0.4.1";
+    bytes32 constant public VERSION = "SandalStraps v0.4.3";
 
     // Pre-deployed registrar factory address
     // address constant BOOTSTRAP = 0xDFd6dCCF429Fe7d4e8bba3f9c29c2C7CbA4f52EF;
     address constant BOOTSTRAP = 0x50653888D7f2D5A6c2B8D394B42d22197a75d109;
+    // address constant BOOTSTRAP = 0x692a70d2e424a56d2c6c27aa97d1a86395877b3a;
 
 //
 // State Variables
@@ -91,13 +90,13 @@ contract SandalStraps is
     /// owner
     /// @dev On 0x0 value for _owner or _creator, ownership precedence is:
     /// `_owner` else `_creator` else msg.sender
-    function SandalStraps(address _creator, bytes32 _regName, address _owner)
+    constructor(address _creator, bytes32 _regName, address _owner)
         public
         RegBase(_creator, _regName, _owner)
     {
     	creator = _creator;
         metaRegistrar = Registrar(bootstrap.createNew("metaregistrar", this));
-        ProductCreated(msg.sender,
+        emit ProductCreated(msg.sender,
             "registrar",
             "metaregistrar",            
             address(metaRegistrar));
@@ -115,7 +114,7 @@ contract SandalStraps is
         public
         payable
     {
-        Deposit(msg.sender, msg.value);
+        emit Deposit(msg.sender, msg.value);
     }
     
 /* Public Constant functions */
@@ -227,26 +226,33 @@ contract SandalStraps is
 
 /* Public non-constant Functions */ 
 
-    /// @dev Creates and registers 'factories' and 'registrar' registrars
-    function _init1()
+    function _init()
         public
         onlyOwner
         noReentry
+        returns(bool)
+    {
+        require(__initFuse > 0);
+        if (__initFuse == 1) return _init1();
+        if (__initFuse == 2) return _init2();
+    }
+    
+    /// @dev Creates and registers 'factories' and 'registrar' registrars
+    function _init1()
+        internal
         returns (bool)
     {
-        require(1 == __initFuse);
-        
         // Create and add 'factories' registrar to metaregistrar
         address factoriesReg = bootstrap.createNew("factories", this);
-        ProductCreated(this, "registrar", "factories", factoriesReg);
+        emit ProductCreated(this, "registrar", "factories", factoriesReg);
         metaRegistrar.register(factoriesReg);
-        RegistrarRegister("metaregistrar", factoriesReg);
+        emit RegistrarRegister("metaregistrar", factoriesReg);
         
         // Create and register the 'registrar' registrar
         address registrarReg = bootstrap.createNew("registrar", this);
-        ProductCreated(this, "registrar", "registrar", registrarReg);
+        emit ProductCreated(this, "registrar", "registrar", registrarReg);
         metaRegistrar.register(registrarReg);
-        RegistrarRegister("metaregistrar", registrarReg);
+        emit RegistrarRegister("metaregistrar", registrarReg);
 
         __initFuse++;
         return true;
@@ -255,28 +261,24 @@ contract SandalStraps is
     /// @dev Registers own and metaregistrar addresses in metaRegistrar.
     /// Registers bootstrap factory address in factories
     function _init2()
-        public
-        onlyOwner
-        noReentry
+        internal
         returns (bool)
     {
-        require(2 == __initFuse);
-        
         // Add this to metaregistrar
         metaRegistrar.register(this);
-        RegistrarRegister("metaregistrar", this);
+        emit RegistrarRegister("metaregistrar", this);
         
         // Add 'metaregistrar' to metaregistrar
         metaRegistrar.register(metaRegistrar);
-        RegistrarRegister("metaregistrar", metaRegistrar);
+        emit RegistrarRegister("metaregistrar", metaRegistrar);
         
         // Register the bootstrap registrar factory in 'factories' registrar
         Registrar(metaRegistrar.addressByName("factories")).register(BOOTSTRAP);
-        RegistrarRegister("factories", BOOTSTRAP);
+        emit RegistrarRegister("factories", BOOTSTRAP);
         
         delete __initFuse;
         return true;
-    }
+    }    
     
     /// @notice Register a Sandalstraps compliant fractory at address `_kAddr`
     /// @param _kAddr The address of a SandalStraps compiant factory
@@ -290,7 +292,7 @@ contract SandalStraps is
         preventReentry
         returns (bool success_)
     {
-        if (msg.value > 0) { Deposit(msg.sender, msg.value); }
+        if (msg.value > 0) { emit Deposit(msg.sender, msg.value); }
 
         // Get the factories registrar
         address factories = metaRegistrar.addressByName("factories");
@@ -316,21 +318,21 @@ contract SandalStraps is
         bytes32 factoryName = RegBase(_kAddr).regName();
         require(factoryName != 0x0);
         Registrar(factories).register(_kAddr);
-        RegistrarRegister("factories", _kAddr);
+        emit RegistrarRegister("factories", _kAddr);
 
         // Create a registrar of same factory name if one doesn't exist
         if (0x0 == Registrar(registrars).addressByName(factoryName)) {
-            if (price > 0) { Withdrawal(msg.sender, regFactory, price); }
+            if (price > 0) { emit Withdrawal(msg.sender, regFactory, price); }
 
             address registrar = Factory(regFactory)
                     .createNew
                     .value(price)(factoryName, this);
-            ProductCreated(this, "registrar", factoryName, registrar);
+            emit ProductCreated(this, "registrar", factoryName, registrar);
             // Register the new registrar in the registrars ragistrar
             Registrar(registrars).register(registrar);
-            RegistrarRegister("registrar", registrar);
+            emit RegistrarRegister("registrar", registrar);
             metaRegistrar.register(registrar);
-            RegistrarRegister("metaregistrar", registrar);
+            emit RegistrarRegister("metaregistrar", registrar);
         }
         success_ = true;
         // Returns in `preventReentry` modifier
@@ -354,7 +356,7 @@ contract SandalStraps is
         // Only owner can use reserved regNames
         require(msg.sender == owner || !reservedNames[_regName]);
         
-        if (msg.value > 0) { Deposit(msg.sender, msg.value); }
+        if (msg.value > 0) { emit Deposit(msg.sender, msg.value); }
         
         _prodOwner = _prodOwner != 0x0 ? _prodOwner : msg.sender;
         
@@ -378,13 +380,13 @@ contract SandalStraps is
         require(msg.value == fullPrice);
         
         // Create the product contract
-        if (price > 0) { Withdrawal(msg.sender, kAddr_, price); }
+        if (price > 0) { emit Withdrawal(msg.sender, kAddr_, price); }
         kAddr_ = factory.createNew.value(price)(_regName, _prodOwner);
-        ProductCreated(msg.sender, _factory, _regName, kAddr_);
+        emit ProductCreated(msg.sender, _factory, _regName, kAddr_);
 
         // Register The product contract. Will throw if product failed creation
         require(registrar.register(kAddr_));
-        RegistrarRegister(_factory, kAddr_);
+        emit RegistrarRegister(_factory, kAddr_);
 
         // Returns in `preventReentry` modifier
     }
@@ -401,7 +403,7 @@ contract SandalStraps is
     {
         Registrar registrar = Registrar(metaRegistrar.addressByName(_registrar));
         require(registrar.register(_kAddr));
-        RegistrarRegister(_registrar, _kAddr);
+        emit RegistrarRegister(_registrar, _kAddr);
         
         return true;
     }
@@ -418,7 +420,7 @@ contract SandalStraps is
     {
         Registrar registrar = Registrar(metaRegistrar.addressByName(_registrar));
         require(registrar.remove(_kAddr));
-        RegistrarRemove(_registrar, _kAddr);
+        emit RegistrarRemove(_registrar, _kAddr);
 
         return true; 	
     }
@@ -451,8 +453,8 @@ contract SandalStraps is
         // If no wallet specified, funds go to creator (typically the factory)
         if (0x0 == wallet) wallet = creator;
 
-        Withdrawal(msg.sender, wallet, this.balance);
-        wallet.transfer(this.balance);
+        emit Withdrawal(msg.sender, wallet, address(this).balance);
+        wallet.transfer(address(this).balance);
 
         return true;
     }
@@ -480,12 +482,12 @@ contract SandalStraps is
     /// @notice Contract to recieve ownership of `_kAddr`
     /// @param _kAddr An address of an `Owned` contract
     function receiveOwnershipOf(address _kAddr)
-         public
-         returns (bool)
+        public
+        returns (bool)
      {
-         require(OwnedAbstract(_kAddr).acceptOwnership());
-         ReceivedOwnership(_kAddr);
-         return true;
+        require(OwnedAbstract(_kAddr).acceptOwnership());
+        emit ReceivedOwnership(_kAddr);
+        return true;
      }
 
     /// @notice Change the owner of the owned contract `_kAddr` to `_owner`
@@ -499,7 +501,7 @@ contract SandalStraps is
         returns (bool)
     {
         require(OwnedAbstract(_kAddr).changeOwner(_owner));
-        ChangeOwnerOf(_kAddr, _owner);
+        emit ChangeOwnerOf(_kAddr, _owner);
         return true;
     }
     /// @notice Change the resource of owned contract `_kAddr` to `_resource`
@@ -541,7 +543,7 @@ contract SandalStrapsFactory is Factory
     bytes32 constant public regName = "sandalstraps";
 
     /// @return version string
-    bytes32 constant public VERSION = "SandalStrapsFactory v0.4.1";
+    bytes32 constant public VERSION = "SandalStrapsFactory v0.4.3";
 
 //
 // Functions
@@ -554,8 +556,7 @@ contract SandalStrapsFactory is Factory
     /// owner
     /// @dev On 0x0 value for _owner or _creator, ownership precedence is:
     /// `_owner` else `_creator` else msg.sender
-    function SandalStrapsFactory(
-        address _creator, bytes32 _regName, address _owner)
+    constructor(address _creator, bytes32 _regName, address _owner)
         public
         Factory(_creator, regName, _owner)
     {
@@ -579,6 +580,6 @@ contract SandalStrapsFactory is Factory
                 _regName,
                 _owner != 0x0 ? owner : msg.sender)
             );
-        Created(this, _regName, kAddr_);
+        emit Created(this, _regName, kAddr_);
     }
 }

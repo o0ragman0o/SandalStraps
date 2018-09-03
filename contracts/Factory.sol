@@ -1,8 +1,8 @@
 /******************************************************************************\
 
 file:   Factory.sol
-ver:    0.4.2
-updated:26-Jul-2018
+ver:    0.4.3
+updated:16-Aug-2018
 author: Darryl Morris (o0ragman0o)
 email:  o0ragman0o AT gmail.com
 
@@ -29,11 +29,11 @@ See MIT Licence for further details.
 
 Release Notes
 -------------
-* Added public constant `uint8 decimals = 18` and `units = "ETH" for
-  compatibility with `Value 0.4.2` API
+* Using solidity 0.4.24 syntax
+
 \******************************************************************************/
 
-pragma solidity ^0.4.17;
+pragma solidity ^0.4.24;
 
 import "./RegBase.sol";
 
@@ -84,7 +84,7 @@ contract Factory is RegBase
         require(msg.value == value);
         if(msg.value > 0)
             // Log deposit if fee was paid
-            Deposit(msg.sender, msg.value);
+            emit Deposit(msg.sender, msg.value);
         _;
     }
 
@@ -99,7 +99,7 @@ contract Factory is RegBase
     /// owner
     /// @dev On 0x0 value for _owner or _creator, ownership precedence is:
     /// `_owner` else `_creator` else msg.sender
-    function Factory(address _creator, bytes32 _regName, address _owner)
+    constructor(address _creator, bytes32 _regName, address _owner)
         public
         RegBase(_creator, _regName, _owner)
     {
@@ -110,7 +110,7 @@ contract Factory is RegBase
         public
         payable
     {
-        Deposit(msg.sender, msg.value);
+        emit Deposit(msg.sender, msg.value);
     }
 
     /// @notice Set the product creation fee
@@ -129,8 +129,8 @@ contract Factory is RegBase
         public
         returns (bool)
     {
-        Withdrawal(msg.sender, owner, this.balance);
-        owner.transfer(this.balance);
+        emit Withdrawal(msg.sender, owner, address(this).balance);
+        owner.transfer(address(this).balance);
         return true;
     }
 
@@ -153,7 +153,7 @@ contract Factory is RegBase
     {
         require(_regName != 0x0);
         address kAddr_ = address(new Foo(msg.sender, _regName, _owner));
-        Created(msg.sender, _regName, kAddr);
+        emit Created(msg.sender, _regName, kAddr);
     }
 
 Example product contract with `Factory` compiant constructor and `Registrar`
@@ -170,7 +170,7 @@ constructor, then a `init()` function can be used instead post deployment.
         uint val;
         uint8 public __initFuse = 1;
         
-        function Foo(address _creator, bytes32 _regName, address _owner)
+        constructor(address _creator, bytes32 _regName, address _owner)
             RegBase(_creator, _regName, _owner)
         {
             // put non-parametric constructor code here.

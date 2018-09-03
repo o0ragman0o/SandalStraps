@@ -1,8 +1,8 @@
 /******************************************************************************\
 
 file:   StringsMap.sol
-ver:    0.4.1
-updated:3-Jun-2018
+ver:    0.4.3
+updated:16-Aug-2018
 author: Darryl Morris (o0ragman0o)
 email:  o0ragman0o AT gmail.com
 
@@ -20,12 +20,12 @@ See MIT Licence for further details.
 
 Release notes
 -------------
-* Added `Cleared(bytes32 hash)`
+* Using SOlidity 0.4.24 syntax
 
 
 \******************************************************************************/
 
-pragma solidity ^0.4.17;
+pragma solidity ^0.4.24;
 
 import "./Factory.sol";
 
@@ -35,7 +35,7 @@ contract StringsMap is RegBase
 // Constants
 //
 
-    bytes32 constant public VERSION = "StringsMap v0.4.1";
+    bytes32 constant public VERSION = "StringsMap v0.4.3";
 
 //
 // State Variables
@@ -61,7 +61,7 @@ contract StringsMap is RegBase
     /// owner
     /// @dev On 0x0 value for _owner or _creator, ownership precedence is:
     /// `_owner` else `_creator` else msg.sender
-    function StringsMap(address _creator, bytes32 _regName, address _owner)
+    constructor(address _creator, bytes32 _regName, address _owner)
         public
         RegBase(_creator, _regName, _owner)
     {
@@ -75,9 +75,9 @@ contract StringsMap is RegBase
         public
         returns (bytes32 hash_)
     {
-        hash_ = keccak256(msg.sender, _string);
+        hash_ = keccak256(abi.encodePacked(msg.sender, _string));
         strings[hash_] = _string;
-        Stored(hash_);
+        emit Stored(hash_);
     }
     
     /// @notice Clear `_string`. Must be string owner
@@ -85,9 +85,9 @@ contract StringsMap is RegBase
         public
         returns (bool)
     {
-        bytes32 hash = keccak256(msg.sender, _string);
+        bytes32 hash = keccak256(abi.encodePacked(msg.sender, _string));
         delete strings[hash];
-        Cleared(bytes32 hash);
+        emit Cleared(hash);
         return true;
     }
     
@@ -97,10 +97,10 @@ contract StringsMap is RegBase
         public
         returns (bool)
     {
-        bytes32 check = keccak256(msg.sender, strings[_hash]);
+        bytes32 check = keccak256(abi.encodePacked(msg.sender, strings[_hash]));
         require(_hash == check || msg.sender == owner);
         delete strings[_hash];
-        Cleared(bytes32 _hash);
+        emit Cleared(_hash);
         return true;
     }
 }
@@ -116,7 +116,7 @@ contract StringsMapFactory is Factory
     bytes32 constant public regName = "stringsmap";
     
     /// @return version string
-    bytes32 constant public VERSION = "StringsMapFactory v0.4.1";
+    bytes32 constant public VERSION = "StringsMapFactory v0.4.3";
 
 //
 // Functions
@@ -129,7 +129,7 @@ contract StringsMapFactory is Factory
     /// owner
     /// @dev On 0x0 value for _owner or _creator, ownership precedence is:
     /// `_owner` else `_creator` else msg.sender
-    function StringsMapFactory(
+    constructor(
             address _creator, bytes32 _regName, address _owner)
         public
         Factory(_creator, regName, _owner)
@@ -150,6 +150,6 @@ contract StringsMapFactory is Factory
         returns (address kAddr_)
     {
         kAddr_ = address(new StringsMap(msg.sender, _regName, _owner));
-        Created(msg.sender, _regName, kAddr_);
+        emit Created(msg.sender, _regName, kAddr_);
     }
 }

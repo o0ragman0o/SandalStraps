@@ -1,8 +1,8 @@
 /******************************************************************************\
 
 file:   BytesMap.sol
-ver:    0.4.1
-updated:3-Jun-2018
+ver:    0.4.3
+updated:16-Aug-2018
 author: Darryl Morris (o0ragman0o)
 email:  o0ragman0o AT gmail.com
 
@@ -23,12 +23,12 @@ See MIT Licence for further details.
 
 Release Notes
 -------------
-* Added `event Cleared(bytes32 indexed _hash)`
+* Solidity 0.4.24 syntax
 
 
 \******************************************************************************/
 
-pragma solidity ^0.4.17;
+pragma solidity ^0.4.24;
 
 import "./Factory.sol";
 
@@ -38,7 +38,7 @@ contract BytesMap is RegBase
 // Constants
 //
 
-    bytes32 constant public VERSION = "BytesMap v0.4.1";
+    bytes32 constant public VERSION = "BytesMap v0.4.3";
     bytes32 constant TYPE_MASK =
         0x00000000ffffffffffffffffffffffffffffffffffffffffffffffffffffffff;
 
@@ -66,7 +66,7 @@ contract BytesMap is RegBase
     /// owner
     /// @dev On 0x0 value for _owner or _creator, ownership precedence is:
     /// `_owner` else `_creator` else msg.sender
-    function BytesMap(address _creator, bytes32 _regName, address _owner)
+    constructor(address _creator, bytes32 _regName, address _owner)
         public
         RegBase(_creator, _regName, _owner)
     {
@@ -84,9 +84,9 @@ contract BytesMap is RegBase
         public
         returns (bytes32 hash_)
     {
-        hash_ = keccak256(msg.sender, _bytes) & TYPE_MASK | _type;
+        hash_ = keccak256(abi.encodePacked(msg.sender, _bytes)) & TYPE_MASK | _type;
         bytesMap[hash_] = _bytes;
-        Stored(hash_);
+        emit Stored(hash_);
     }
     
     /// @notice Clear `_bytes`. Must be bytes owner or contract owner
@@ -94,9 +94,9 @@ contract BytesMap is RegBase
         public
         returns (bool)
     {
-        bytes32 hash = keccak256(msg.sender, _bytes) & TYPE_MASK | _type;
+        bytes32 hash = keccak256(abi.encodePacked(msg.sender, _bytes)) & TYPE_MASK | _type;
         delete bytesMap[hash];
-        Cleared(hash);
+        emit Cleared(hash);
         return true;
     }
     
@@ -106,11 +106,11 @@ contract BytesMap is RegBase
         public
         returns (bool)
     {
-        bytes32 check = keccak256(msg.sender, bytesMap[_hash]) & TYPE_MASK;
+        bytes32 check = keccak256(abi.encodePacked(msg.sender, bytesMap[_hash])) & TYPE_MASK;
         bytes32 hash = _hash & TYPE_MASK;
         require(hash == check || msg.sender == owner);
         delete bytesMap[_hash];
-        Cleared(bytes32 hash);
+        emit Cleared(_hash);
         return true;
     }
 }
@@ -126,7 +126,7 @@ contract BytesMapFactory is Factory
     bytes32 constant public regName = "bytesmap";
     
     /// @return version string
-    bytes32 constant public VERSION = "BytesMapFactory v0.4.1";
+    bytes32 constant public VERSION = "BytesMapFactory v0.4.3";
 
 //
 // Functions
@@ -139,7 +139,7 @@ contract BytesMapFactory is Factory
     /// owner
     /// @dev On 0x0 value for _owner or _creator, ownership precedence is:
     /// `_owner` else `_creator` else msg.sender
-    function BytesMapFactory(
+    constructor(
             address _creator, bytes32 _regName, address _owner)
         public
         Factory(_creator, regName, _owner)
@@ -160,6 +160,6 @@ contract BytesMapFactory is Factory
         returns (address kAddr_)
     {
         kAddr_ = address(new BytesMap(msg.sender, _regName, _owner));
-        Created(msg.sender, _regName, kAddr_);
+        emit Created(msg.sender, _regName, kAddr_);
     }
 }
