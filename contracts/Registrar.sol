@@ -21,9 +21,6 @@ stored in and looked up from the registered contract.
 `Registrar` is itself Registrar compliant and so can be self registered or
 registered in another `Registrar` instance.
 
-`Registrar` is an ENS compliant resolver for the contracts registered in it.
-It impliments the EIP137 `address` record interface.
-
 This software is distributed in the hope that it will be useful,
 but WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  

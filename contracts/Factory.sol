@@ -2,7 +2,7 @@
 
 file:   Factory.sol
 ver:    0.4.3
-updated:16-Aug-2018
+updated:11-Sep-2018
 author: Darryl Morris (o0ragman0o)
 email:  o0ragman0o AT gmail.com
 
@@ -30,6 +30,7 @@ See MIT Licence for further details.
 Release Notes
 -------------
 * Using solidity 0.4.24 syntax
+* added `event Set` from `Value` API
 
 \******************************************************************************/
 
@@ -75,6 +76,9 @@ contract Factory is RegBase
     // Logged upon a withdrawal
     event Withdrawal(address indexed _by, address indexed _to, uint _value);
 
+    // Logged upon value change
+    event Set(uint _value, uint8 _decimals, bytes32 _units);
+    
 //
 // Modifiers
 //
@@ -121,6 +125,7 @@ contract Factory is RegBase
         returns (bool)
     {
         value = _price;
+        emit Set(_price, 18, 'ETH');
         return true;
     }
 
@@ -151,7 +156,6 @@ contract Factory is RegBase
         feePaid
         returns (address kAddr_)
     {
-        require(_regName != 0x0);
         address kAddr_ = address(new Foo(msg.sender, _regName, _owner));
         emit Created(msg.sender, _regName, kAddr);
     }

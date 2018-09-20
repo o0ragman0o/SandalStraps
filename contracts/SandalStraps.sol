@@ -16,6 +16,9 @@ See MIT Licence for further details.
 
 Release Notes:
 * using Solidity 0.4.24 syntax
+* no longer register product registrars in metaregistrar
+* fixed event order bug in 
+* 
 \******************************************************************************/
 
 pragma solidity ^0.4.24;
@@ -331,8 +334,6 @@ contract SandalStraps is
             // Register the new registrar in the registrars ragistrar
             Registrar(registrars).register(registrar);
             emit RegistrarRegister("registrar", registrar);
-            metaRegistrar.register(registrar);
-            emit RegistrarRegister("metaregistrar", registrar);
         }
         success_ = true;
         // Returns in `preventReentry` modifier
@@ -364,7 +365,12 @@ contract SandalStraps is
         Factory factory = Factory(addressByNameFrom("factories", _factory));
         
         // Get the factory's registrar and ensure `_regName` is not registered
-        Registrar registrar = Registrar(metaRegistrar.addressByName(_factory));
+        // Registrar registrar = Registrar(metaRegistrar.addressByName(_factory));
+        Registrar registrar = Registrar(
+            Registrar(
+                metaRegistrar.addressByName("registrar")
+                ).addressByName(_factory)
+            );
 
         // Get price from factory        
         uint256 price = factory.value();
@@ -380,8 +386,8 @@ contract SandalStraps is
         require(msg.value == fullPrice);
         
         // Create the product contract
-        if (price > 0) { emit Withdrawal(msg.sender, kAddr_, price); }
         kAddr_ = factory.createNew.value(price)(_regName, _prodOwner);
+        if (price > 0) { emit Withdrawal(msg.sender, factory, price); }
         emit ProductCreated(msg.sender, _factory, _regName, kAddr_);
 
         // Register The product contract. Will throw if product failed creation
